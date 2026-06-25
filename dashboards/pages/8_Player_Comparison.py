@@ -1,4 +1,18 @@
+"""
+dashboards/pages/8_Player_Comparison.py
+=========================================
+SPORTA VISTA PRO – Player Comparison with rich profile cards.
+
+Architecture:
+  UI (this file)
+    ↓
+  services/player_service.py   ← clean business logic
+    ↓
+  database/player_repository.py ← all SQL lives here
+"""
+
 import sys
+import io
 from pathlib import Path
 
 # Add project root to Python path
@@ -7,541 +21,590 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.append(str(PROJECT_ROOT))
 
 import html
-import io
 import streamlit as st
 import streamlit.components.v1 as components
 import pandas as pd
 import plotly.graph_objects as go
 
-from database.db_connection import engine
-from ai.response_generator import explain_results, generate_scouting_verdict
-
-
-# ---------------------------------------------------------------------------
-# Tier helper
-# ---------------------------------------------------------------------------
-def sporta_tier(score: float) -> tuple[str, str]:
-    """Return (label, hex_colour) for a normalized SPORTA Score."""
-    if score >= 90:
-        return "Elite", "#10B981"
-    elif score >= 80:
-        return "Excellent", "#3B82F6"
-    elif score >= 70:
-        return "Good", "#F59E0B"
-    elif score >= 60:
-        return "Average", "#8B5CF6"
-    else:
-        return "Needs Improvement", "#EF4444"
+from database.player_repository import fetch_player_name_list
+from services.player_service import get_player_profile
 
 # Page Config handled by central entry point app.py
 
-st.title("⚽ SPORTA VISTA PRO - Player Comparison")
+# ============================================================
+# CSS – professional dark cards
+# ============================================================
+st.markdown("""
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 
-# Load player names
-players_query = """
-SELECT DISTINCT player_name
-FROM vw_scouting
-ORDER BY player_name;
-"""
+/* ---------- Profile grid ---------- */
+.svp-profile-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin: 1.25rem 0 2rem;
+}
+@media (max-width: 860px) {
+    .svp-profile-grid { grid-template-columns: 1fr; }
+}
 
-players = pd.read_sql(players_query, engine)["player_name"].tolist()
+/* ---------- Card shell ---------- */
+.svp-card {
+    font-family: 'Inter', sans-serif;
+    background: linear-gradient(145deg, #0f172a 0%, #1e293b 100%);
+    border: 1px solid rgba(148,163,184,0.18);
+    border-radius: 20px;
+    padding: 1.5rem;
+    box-shadow: 0 24px 48px -12px rgba(0,0,0,0.55);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    min-width: 0;
+}
+
+/* ---------- Card header ---------- */
+.svp-card-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(148,163,184,0.15);
+}
+.svp-avatar {
+    flex: 0 0 52px;
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    display: grid;
+    place-items: center;
+    background: linear-gradient(135deg, #0ea5e9, #6366f1);
+    color: #fff;
+    font-weight: 900;
+    font-size: 1.15rem;
+    letter-spacing: 1px;
+    box-shadow: 0 4px 14px rgba(14,165,233,0.35);
+}
+.svp-header-text { min-width: 0; }
+.svp-player-display-name {
+    color: #f1f5f9;
+    font-size: 1.18rem;
+    font-weight: 800;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+    margin: 0;
+}
+.svp-player-full-name {
+    color: #64748b;
+    font-size: 0.78rem;
+    font-weight: 500;
+    margin: 2px 0 6px;
+    overflow-wrap: anywhere;
+}
+
+/* ---------- Tier badge ---------- */
+.svp-tier-badge {
+    display: inline-block;
+    padding: 3px 12px;
+    border-radius: 20px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #fff;
+}
+
+/* ---------- Profile fields ---------- */
+.svp-fields { display: flex; flex-direction: column; gap: 0; }
+.svp-field-row {
+    display: grid;
+    grid-template-columns: 9rem 1fr;
+    gap: 0.75rem;
+    align-items: start;
+    padding: 0.55rem 0;
+    border-bottom: 1px solid rgba(148,163,184,0.08);
+}
+.svp-field-row:last-child { border-bottom: none; }
+.svp-field-label {
+    color: #64748b;
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding-top: 1px;
+}
+.svp-field-value {
+    color: #e2e8f0;
+    font-size: 0.88rem;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+    text-align: right;
+}
+.svp-field-value.na {
+    color: #475569;
+    font-style: italic;
+    font-weight: 500;
+}
+
+/* ---------- Stats section ---------- */
+.svp-stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.6rem;
+    margin-top: 0.25rem;
+}
+.svp-stat-chip {
+    background: rgba(148,163,184,0.07);
+    border: 1px solid rgba(148,163,184,0.12);
+    border-radius: 10px;
+    padding: 0.5rem 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.svp-stat-label {
+    color: #64748b;
+    font-size: 0.68rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+.svp-stat-value {
+    color: #f1f5f9;
+    font-size: 1rem;
+    font-weight: 800;
+}
+.svp-stat-value.na { color: #475569; font-style: italic; font-size: 0.82rem; }
+
+/* ---------- Section header ---------- */
+.svp-section-title {
+    font-family: 'Inter', sans-serif;
+    color: #94a3b8;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.25rem;
+}
+</style>
+""", unsafe_allow_html=True)
+
+
+# ============================================================
+# Page title
+# ============================================================
+st.title("⚽ SPORTA VISTA PRO — Player Comparison")
+st.markdown("Select two players to compare their profiles and performance statistics.")
+
+
+# ============================================================
+# Player selector
+# ============================================================
+@st.cache_data(ttl=300, show_spinner=False)
+def load_player_names() -> list[str]:
+    return fetch_player_name_list()
+
+
+with st.spinner("Loading player list…"):
+    players = load_player_names()
 
 if len(players) < 2:
-    st.error("Not enough players found in vw_scouting.")
+    st.error("Not enough players found. Ensure vw_scouting has data.")
     st.stop()
 
-col1, col2 = st.columns(2)
+sel_col1, sel_col2 = st.columns(2)
+with sel_col1:
+    player1_name = st.selectbox("🔵 Player 1", players, key="p1_select")
+with sel_col2:
+    player2_name = st.selectbox("🔴 Player 2", players,
+                                index=min(1, len(players) - 1), key="p2_select")
 
-with col1:
-    player1 = st.selectbox("Select Player 1", players)
+compare_btn = st.button("🔍 Compare Players", use_container_width=True,
+                        type="primary")
 
-with col2:
-    player2 = st.selectbox(
-        "Select Player 2",
-        players,
-        index=1 if len(players) > 1 else 0
+if not compare_btn:
+    st.stop()
+
+if player1_name == player2_name:
+    st.warning("Please select two **different** players.")
+    st.stop()
+
+
+# ============================================================
+# Load profiles (cached per player name)
+# ============================================================
+@st.cache_data(ttl=300, show_spinner=False)
+def cached_profile(name: str) -> dict:
+    return get_player_profile(name)
+
+
+with st.spinner("Loading player profiles…"):
+    p1 = cached_profile(player1_name)
+    p2 = cached_profile(player2_name)
+
+
+# ============================================================
+# Card renderer
+# ============================================================
+def _field_row(label: str, value: str) -> str:
+    is_na = value == "N/A"
+    val_class = "svp-field-value na" if is_na else "svp-field-value"
+    return (
+        '<div class="svp-field-row">'
+        f'<span class="svp-field-label">{html.escape(label)}</span>'
+        f'<span class="{val_class}">{html.escape(value)}</span>'
+        '</div>'
     )
 
-if st.button("🔍 Compare Players"):
 
-    if player1 == player2:
-        st.warning("Please select two different players.")
-        st.stop()
+def _stat_chip(label: str, value: str) -> str:
+    is_na = value == "N/A"
+    val_class = "svp-stat-value na" if is_na else "svp-stat-value"
+    return (
+        '<div class="svp-stat-chip">'
+        f'<span class="svp-stat-label">{html.escape(label)}</span>'
+        f'<span class="{val_class}">{html.escape(value)}</span>'
+        '</div>'
+    )
 
-    query = f"""
-    SELECT *
-    FROM vw_scouting
-    WHERE player_name IN ('{player1}', '{player2}');
+
+def render_profile_card(p: dict, accent_color: str = "#0ea5e9") -> str:
+    tier_label, tier_color = p["sporta_tier"]
+    score_str = f"{p['sporta_score']:.2f}" if p["sporta_score"] is not None else "N/A"
+
+    # Profile fields (identity info — first 5 rows only in the header card)
+    identity_rows = "".join(
+        _field_row(lbl, val)
+        for lbl, val in p["profile_fields"]
+    )
+
+    # Stats chips (performance)
+    stat_chips = "".join(
+        _stat_chip(lbl, val)
+        for lbl, val in p["stat_fields"]
+    )
+
+    display = html.escape(p["display_name"])
+    full = html.escape(p["full_name"])
+    initials = html.escape(p["initials"])
+    show_full = f'<p class="svp-player-full-name">{full}</p>' if full != display else ""
+
+    return f"""
+    <div class="svp-card">
+        <div class="svp-card-header">
+            <div class="svp-avatar">{initials}</div>
+            <div class="svp-header-text">
+                <p class="svp-player-display-name">{display}</p>
+                {show_full}
+                <span class="svp-tier-badge" style="background:{tier_color};">{tier_label}</span>
+                &nbsp;
+                <span style="color:#94a3b8;font-size:0.78rem;font-weight:600;">
+                    SPORTA Score: <strong style="color:#f1f5f9;">{score_str}</strong>
+                </span>
+            </div>
+        </div>
+
+        <div>
+            <p class="svp-section-title">Player Profile</p>
+            <div class="svp-fields">
+                {identity_rows}
+            </div>
+        </div>
+
+        <div>
+            <p class="svp-section-title">Performance Statistics</p>
+            <div class="svp-stats-grid">
+                {stat_chips}
+            </div>
+        </div>
+    </div>
     """
 
-    df = pd.read_sql(query, engine)
 
-    st.subheader("📊 Player Statistics")
-    st.dataframe(df, use_container_width=True)
+# ============================================================
+# Render profile cards
+# ============================================================
+st.markdown("---")
+st.subheader("🪪 Player Profile Cards")
 
-    # ----------------------------
-    # KPI Cards
-    # ----------------------------
-
-    # Get each player's row
-    player1_stats = df.iloc[0]
-    player2_stats = df.iloc[1]
-
-    # ----------------------------
-    # Player Profile Cards
-    # ----------------------------
-
-    st.markdown(
-        """
-        <style>
-        .sporta-profile-grid {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 1.25rem;
-            align-items: stretch;
-            margin: 0.5rem 0 1.75rem;
-        }
-        .sporta-player-card {
-            min-width: 0;
-            display: flex;
-            flex-direction: column;
-            gap: 0.85rem;
-            background: linear-gradient(145deg, #111827 0%, #172033 100%);
-            border: 1px solid rgba(148, 163, 184, 0.22);
-            border-radius: 18px;
-            padding: 1.35rem;
-            box-shadow: 0 18px 45px rgba(15, 23, 42, 0.28);
-        }
-        .sporta-card-header {
-            display: flex;
-            align-items: center;
-            gap: 0.85rem;
-            padding-bottom: 0.85rem;
-            border-bottom: 1px solid rgba(148, 163, 184, 0.18);
-        }
-        .sporta-avatar {
-            flex: 0 0 44px;
-            width: 44px;
-            height: 44px;
-            border-radius: 14px;
-            display: grid;
-            place-items: center;
-            background: #0ea5e9;
-            color: #f8fafc;
-            font-weight: 800;
-            font-size: 1rem;
-        }
-        .sporta-player-name {
-            min-width: 0;
-            color: #f8fafc;
-            font-size: 1.12rem;
-            line-height: 1.35;
-            font-weight: 800;
-            overflow-wrap: anywhere;
-        }
-        .sporta-profile-fields {
-            display: flex;
-            flex-direction: column;
-            gap: 0.65rem;
-        }
-        .sporta-profile-row {
-            display: grid;
-            grid-template-columns: minmax(8.5rem, 0.8fr) minmax(0, 1.2fr);
-            gap: 1rem;
-            align-items: start;
-            padding-bottom: 0.65rem;
-            border-bottom: 1px solid rgba(148, 163, 184, 0.12);
-        }
-        .sporta-profile-row:last-child {
-            border-bottom: 0;
-            padding-bottom: 0;
-        }
-        .sporta-profile-label {
-            color: #94a3b8;
-            font-size: 0.82rem;
-            font-weight: 650;
-            line-height: 1.35;
-        }
-        .sporta-profile-value {
-            color: #e5e7eb;
-            font-size: 0.92rem;
-            line-height: 1.4;
-            font-weight: 700;
-            overflow-wrap: anywhere;
-            text-align: right;
-        }
-        .sporta-profile-value.is-empty {
-            color: #64748b;
-            font-style: italic;
-            font-weight: 600;
-        }
-        @media (max-width: 900px) {
-            .sporta-profile-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-        @media (max-width: 560px) {
-            .sporta-player-card {
-                padding: 1rem;
-                border-radius: 14px;
-            }
-            .sporta-profile-row {
-                grid-template-columns: 1fr;
-                gap: 0.25rem;
-            }
-            .sporta-profile-value {
-                text-align: left;
-            }
-        }
-        </style>
-        """,
-        unsafe_allow_html=True,
-    )
-
-    def profile_field(stats, col, label, default="-"):
-        """Return a profile row HTML string; shows default if column absent or null."""
-        value = default
-        is_empty = True
-        if col in df.columns:
-            raw_value = stats[col]
-            if pd.notnull(raw_value) and str(raw_value).strip() not in ("", "None"):
-                value = raw_value
-                is_empty = False
-
-        value_class = "sporta-profile-value is-empty" if is_empty else "sporta-profile-value"
-        return (
-            '<div class="sporta-profile-row">'
-            f'<span class="sporta-profile-label">{html.escape(label)}</span>'
-            f'<span class="{value_class}">{html.escape(str(value))}</span>'
-            '</div>'
-        )
-
-    def build_card(stats):
-        name = str(stats["player_name"])
-        initials = "".join(part[:1] for part in name.split()[:2]).upper() or "P"
-        rows = "".join([
-            profile_field(stats, "position", "Position"),
-            profile_field(stats, "nationality", "Nationality"),
-            profile_field(stats, "team", "Club / Team"),
-            profile_field(stats, "club", "Club"),
-            profile_field(stats, "age", "Age"),
-            profile_field(stats, "preferred_foot", "Preferred Foot"),
-        ])
-        return (
-            '<section class="sporta-player-card">'
-            '<div class="sporta-card-header">'
-            f'<div class="sporta-avatar">{html.escape(initials)}</div>'
-            f'<div class="sporta-player-name">{html.escape(name)}</div>'
-            '</div>'
-            f'<div class="sporta-profile-fields">{rows}</div>'
-            '</section>'
-        )
-
-    st.subheader("Player Profiles")
-    st.markdown(
-        f"""
-        <div class="sporta-profile-grid">
-            {build_card(player1_stats)}
-            {build_card(player2_stats)}
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+st.markdown(
+    f"""
+    <div class="svp-profile-grid">
+        {render_profile_card(p1, "#0ea5e9")}
+        {render_profile_card(p2, "#f43f5e")}
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
 
 
-    st.subheader("🏆 Key Performance Indicators")
+# ============================================================
+# SPORTA Score comparison bar
+# ============================================================
+st.subheader("🏆 SPORTA Score Comparison (0–100)")
 
-    col1, col2 = st.columns(2)
+s1 = p1["sporta_score"]
+s2 = p2["sporta_score"]
 
-    with col1:
-        s1 = float(player1_stats["sporta_score"])
-        tier1_label, tier1_color = sporta_tier(s1)
-        st.markdown(f"### {player1_stats['player_name']}")
-        st.metric("SPORTA Score (0–100)", f"{s1:.2f}")
-        st.markdown(
-            f'<span style="background:{tier1_color};color:#fff;padding:3px 12px;'
-            f'border-radius:12px;font-size:0.82rem;font-weight:700;">{tier1_label}</span>',
-            unsafe_allow_html=True,
-        )
-        st.metric("Matches Played", int(player1_stats["matches_played"]) if "matches_played" in df.columns else "—")
-        st.metric("Goals", player1_stats["goals"])
-        st.metric("xG", round(float(player1_stats["total_xg"]), 2))
-        st.metric("Passes", player1_stats["passes"])
-        st.metric("Dribbles", player1_stats["dribbles"])
-
-    with col2:
-        s2 = float(player2_stats["sporta_score"])
-        tier2_label, tier2_color = sporta_tier(s2)
-        st.markdown(f"### {player2_stats['player_name']}")
-        st.metric(
-            "SPORTA Score (0–100)",
-            f"{s2:.2f}",
-            delta=f"{s2 - s1:+.2f}",
-        )
-        st.markdown(
-            f'<span style="background:{tier2_color};color:#fff;padding:3px 12px;'
-            f'border-radius:12px;font-size:0.82rem;font-weight:700;">{tier2_label}</span>',
-            unsafe_allow_html=True,
-        )
-        st.metric("Matches Played", int(player2_stats["matches_played"]) if "matches_played" in df.columns else "—")
-        st.metric("Goals", player2_stats["goals"])
-        st.metric("xG", round(float(player2_stats["total_xg"]), 2))
-        st.metric("Passes", player2_stats["passes"])
-        st.metric("Dribbles", player2_stats["dribbles"])
-
-    # ----------------------------
-    # SPORTA Score comparison bar (separate from raw stats)
-    # ----------------------------
-    st.subheader("📊 SPORTA Score Comparison (0–100)")
-    score_df = pd.DataFrame({
-        "Player": [player1_stats["player_name"], player2_stats["player_name"]],
-        "SPORTA Score": [s1, s2],
+if s1 is not None or s2 is not None:
+    score_data = pd.DataFrame({
+        "Player": [p1["display_name"], p2["display_name"]],
+        "SPORTA Score": [s1 or 0.0, s2 or 0.0],
     }).set_index("Player")
-    st.bar_chart(score_df, y_label="Score (0–100)")
+    st.bar_chart(score_data)
 
-    # ----------------------------
-    # Side-by-Side Raw Stats Bar Chart
-    # ----------------------------
-    chart_df = pd.DataFrame({
-        "Metric": ["Goals", "Dribbles", "Recoveries", "Pressures"],
-        player1_stats["player_name"]: [
-            player1_stats["goals"],
-            player1_stats["dribbles"],
-            player1_stats["recoveries"],
-            player1_stats["pressures"],
-        ],
-        player2_stats["player_name"]: [
-            player2_stats["goals"],
-            player2_stats["dribbles"],
-            player2_stats["recoveries"],
-            player2_stats["pressures"],
-        ],
-    }).set_index("Metric")
-
-    st.subheader("📊 Raw Stats Side-by-Side")
-    st.bar_chart(chart_df)
-
-    # ----------------------------
-    # Detailed Stats by Category
-    # ----------------------------
-
-    st.subheader("🔍 Detailed Statistics")
-
-    p1 = player1_stats["player_name"]
-    p2 = player2_stats["player_name"]
-
-    def safe_val(stats, col, fmt=None):
-        """Return formatted value if column exists, else '—'."""
-        if col in df.columns and pd.notnull(stats[col]):
-            val = stats[col]
-            if fmt == "pct":
-                return f"{round(float(val) * 100, 1)}%"
-            if fmt == "round2":
-                return round(float(val), 2)
-            return val
-        return "—"
-
-    # ⚽ Attacking
-    with st.expander("⚽ Attacking Statistics"):
-        attacking_data = {
-            "Metric": ["Goals", "Shots", "xG", "Shot Conversion Rate"],
-            p1: [
-                safe_val(player1_stats, "goals"),
-                safe_val(player1_stats, "shots"),
-                safe_val(player1_stats, "total_xg", "round2"),
-                safe_val(player1_stats, "shot_conversion_rate", "pct"),
-            ],
-            p2: [
-                safe_val(player2_stats, "goals"),
-                safe_val(player2_stats, "shots"),
-                safe_val(player2_stats, "total_xg", "round2"),
-                safe_val(player2_stats, "shot_conversion_rate", "pct"),
-            ],
-        }
-        st.dataframe(pd.DataFrame(attacking_data).set_index("Metric"), use_container_width=True)
-
-    # 🎯 Passing & Creativity
-    with st.expander("🎯 Passing & Creativity"):
-        passing_data = {
-            "Metric": ["Total Passes", "Pass Completion %", "Assists", "Key Passes"],
-            p1: [
-                safe_val(player1_stats, "passes"),
-                safe_val(player1_stats, "pass_completion_pct", "pct"),
-                safe_val(player1_stats, "assists"),
-                safe_val(player1_stats, "key_passes"),
-            ],
-            p2: [
-                safe_val(player2_stats, "passes"),
-                safe_val(player2_stats, "pass_completion_pct", "pct"),
-                safe_val(player2_stats, "assists"),
-                safe_val(player2_stats, "key_passes"),
-            ],
-        }
-        st.dataframe(pd.DataFrame(passing_data).set_index("Metric"), use_container_width=True)
-
-    # 👟 Ball Progression
-    with st.expander("👟 Ball Progression"):
-        progression_data = {
-            "Metric": ["Dribbles", "Carries", "Progressive Carries"],
-            p1: [
-                safe_val(player1_stats, "dribbles"),
-                safe_val(player1_stats, "carries"),
-                safe_val(player1_stats, "progressive_carries"),
-            ],
-            p2: [
-                safe_val(player2_stats, "dribbles"),
-                safe_val(player2_stats, "carries"),
-                safe_val(player2_stats, "progressive_carries"),
-            ],
-        }
-        st.dataframe(pd.DataFrame(progression_data).set_index("Metric"), use_container_width=True)
-
-    # 🛡️ Defensive
-    with st.expander("🛡️ Defensive Statistics"):
-        defensive_data = {
-            "Metric": ["Pressures", "Recoveries", "Tackles", "Interceptions"],
-            p1: [
-                safe_val(player1_stats, "pressures"),
-                safe_val(player1_stats, "recoveries"),
-                safe_val(player1_stats, "tackles"),
-                safe_val(player1_stats, "interceptions"),
-            ],
-            p2: [
-                safe_val(player2_stats, "pressures"),
-                safe_val(player2_stats, "recoveries"),
-                safe_val(player2_stats, "tackles"),
-                safe_val(player2_stats, "interceptions"),
-            ],
-        }
-        st.dataframe(pd.DataFrame(defensive_data).set_index("Metric"), use_container_width=True)
-
-    # ----------------------------
-    # Radar Chart
-    # ----------------------------
-
-    # ----------------------------
-    # Radar Chart — use normalized (0–1) values so all axes share the same scale
-    # ----------------------------
-    # Elite benchmarks (per match) — same as the SQL formula caps
-    RADAR_CAPS = {
-        "sporta_score": 100.0,   # already 0–100
-        "goals":        50.0,    # career goals cap for radar
-        "total_xg":     40.0,    # career xG cap
-        "shots":       500.0,    # career shots cap
-        "passes":    25000.0,    # career passes cap
-        "dribbles":   1000.0,    # career dribbles cap
-        "carries":   15000.0,    # career carries cap
-        "pressures":  3000.0,    # career pressures cap
-        "recoveries": 1000.0,    # career recoveries cap
-    }
-
-    radar_labels = ["SPORTA Score", "Goals", "xG", "Shots",
-                    "Passes", "Dribbles", "Carries", "Pressures", "Recoveries"]
-    radar_cols   = ["sporta_score", "goals", "total_xg", "shots",
-                    "passes", "dribbles", "carries", "pressures", "recoveries"]
-
-    available_radar = [(lbl, col) for lbl, col in zip(radar_labels, radar_cols) if col in df.columns]
-
-    if len(df) == 2 and len(available_radar) >= 3:
-        labels = [x[0] for x in available_radar]
-        cols   = [x[1] for x in available_radar]
-
-        fig = go.Figure()
-
-        for _, row in df.iterrows():
-            values = []
-            for col in cols:
-                raw = float(row[col]) if pd.notnull(row[col]) else 0.0
-                cap = RADAR_CAPS.get(col, 1.0)
-                values.append(min(raw / cap * 100, 100.0))   # 0–100 scale
-
-            values.append(values[0])  # close polygon
-
-            fig.add_trace(
-                go.Scatterpolar(
-                    r=values,
-                    theta=labels + [labels[0]],
-                    fill="toself",
-                    name=row["player_name"],
-                )
-            )
-
-        fig.update_layout(
-            title="Player Radar Comparison (Normalized 0–100)",
-            polar=dict(
-                radialaxis=dict(visible=True, range=[0, 100])
-            ),
-            showlegend=True,
+    # Delta callout
+    if s1 is not None and s2 is not None:
+        delta = s1 - s2
+        winner = p1["display_name"] if delta > 0 else p2["display_name"]
+        loser  = p2["display_name"] if delta > 0 else p1["display_name"]
+        st.info(
+            f"**{winner}** leads by **{abs(delta):.2f} points** over {loser}."
         )
+else:
+    st.warning("SPORTA Score not available for these players (minimum 3 matches required).")
 
-        st.subheader("🕸️ Radar Chart")
-        st.plotly_chart(fig, use_container_width=True)
 
-    # ----------------------------
-    # Export
-    # ----------------------------
+# ============================================================
+# Raw stats side-by-side comparison table
+# ============================================================
+st.subheader("📊 Side-by-Side Statistics")
 
-    st.subheader("📤 Export")
+stat_keys = [
+    ("Goals",        "goals"),
+    ("xG",           "total_xg"),
+    ("Passes",       "passes"),
+    ("Shots",        "shots"),
+    ("Dribbles",     "dribbles"),
+    ("Carries",      "carries"),
+    ("Pressures",    "pressures"),
+    ("Recoveries",   "recoveries"),
+    ("Matches",      "matches_played"),
+]
 
-    export_col1, export_col2, export_col3 = st.columns(3)
-
-    # --- CSV Download ---
-    csv_buffer = io.StringIO()
-    df.to_csv(csv_buffer, index=False)
-    csv_bytes = csv_buffer.getvalue().encode("utf-8")
-
-    with export_col1:
-        st.download_button(
-            label="📄 Download CSV",
-            data=csv_bytes,
-            file_name=f"{player1}_vs_{player2}_comparison.csv",
-            mime="text/csv",
-            use_container_width=True,
-        )
-
-    # --- PDF (Coming Soon) ---
-    with export_col2:
-        if st.button("📑 Download PDF", use_container_width=True):
-            st.toast("📑 PDF export coming soon!", icon="🚧")
-
-    # --- AI Scouting Verdict + Copy ---
-    # ----------------------------
-    # AI Scouting Verdict
-    # ----------------------------
-
-    st.subheader("🤖 AI Scouting Verdict")
-
-    verdict = None
-
+def _raw_val(raw: dict, key: str):
+    v = raw.get(key)
+    if v is None:
+        return "N/A"
     try:
-        with st.spinner("Generating scouting verdict..."):
-            verdict = generate_scouting_verdict(
-                player1=player1,
-                player2=player2,
-                dataframe_text=df.to_string(index=False),
+        if key in ("total_xg", "sporta_score"):
+            return round(float(v), 2)
+        return int(float(v))
+    except (TypeError, ValueError):
+        return "N/A"
+
+comparison_data = {
+    "Metric": [lbl for lbl, _ in stat_keys],
+    p1["display_name"]: [_raw_val(p1["raw"], k) for _, k in stat_keys],
+    p2["display_name"]: [_raw_val(p2["raw"], k) for _, k in stat_keys],
+}
+st.dataframe(
+    pd.DataFrame(comparison_data).set_index("Metric"),
+    use_container_width=True,
+)
+
+
+# ============================================================
+# Raw stats bar chart (numeric only, on comparable scale)
+# ============================================================
+st.subheader("📊 Raw Stats Bar Chart")
+
+bar_keys = [("Goals","goals"), ("Dribbles","dribbles"),
+            ("Recoveries","recoveries"), ("Pressures","pressures")]
+
+bar_data = pd.DataFrame({
+    "Metric": [lbl for lbl, _ in bar_keys],
+    p1["display_name"]: [_raw_val(p1["raw"], k) for _, k in bar_keys],
+    p2["display_name"]: [_raw_val(p2["raw"], k) for _, k in bar_keys],
+}).set_index("Metric")
+
+# Only plot numeric rows
+bar_data = bar_data[bar_data.apply(
+    lambda row: all(v != "N/A" for v in row), axis=1
+)]
+if not bar_data.empty:
+    st.bar_chart(bar_data)
+else:
+    st.info("Not enough numeric data to render bar chart.")
+
+
+# ============================================================
+# Radar chart – all axes normalized 0-100
+# ============================================================
+RADAR_CAPS = {
+    "sporta_score": 100.0,
+    "goals":        60.0,
+    "total_xg":     50.0,
+    "shots":       500.0,
+    "passes":    28000.0,
+    "dribbles":   1200.0,
+    "carries":   18000.0,
+    "pressures":  4000.0,
+    "recoveries": 1200.0,
+}
+
+RADAR_LABELS = ["SPORTA", "Goals", "xG", "Shots",
+                "Passes", "Dribbles", "Carries", "Pressures", "Recoveries"]
+RADAR_KEYS   = ["sporta_score", "goals", "total_xg", "shots",
+                "passes", "dribbles", "carries", "pressures", "recoveries"]
+
+
+def _radar_values(raw: dict) -> list[float]:
+    vals = []
+    for key in RADAR_KEYS:
+        v = raw.get(key)
+        try:
+            fv = float(v) if v is not None else 0.0
+        except (TypeError, ValueError):
+            fv = 0.0
+        cap = RADAR_CAPS.get(key, 1.0)
+        vals.append(min(fv / cap * 100, 100.0))
+    return vals
+
+
+v1 = _radar_values(p1["raw"])
+v2 = _radar_values(p2["raw"])
+
+fig = go.Figure()
+for name, values, color in [
+    (p1["display_name"], v1, "#0ea5e9"),
+    (p2["display_name"], v2, "#f43f5e"),
+]:
+    fig.add_trace(go.Scatterpolar(
+        r=values + [values[0]],
+        theta=RADAR_LABELS + [RADAR_LABELS[0]],
+        fill="toself",
+        name=name,
+        line=dict(color=color, width=2),
+        fillcolor=color.replace("#", "rgba(") + ",0.12)" if color.startswith("#") else color,
+    ))
+
+fig.update_layout(
+    title=dict(text="Player Radar Comparison (Normalized 0–100)", font=dict(color="#94a3b8")),
+    polar=dict(
+        bgcolor="rgba(15,23,42,0.6)",
+        radialaxis=dict(visible=True, range=[0, 100],
+                        gridcolor="rgba(148,163,184,0.15)",
+                        tickfont=dict(color="#64748b")),
+        angularaxis=dict(gridcolor="rgba(148,163,184,0.15)",
+                         tickfont=dict(color="#94a3b8"))
+    ),
+    paper_bgcolor="rgba(15,23,42,0)",
+    plot_bgcolor="rgba(15,23,42,0)",
+    showlegend=True,
+    legend=dict(font=dict(color="#94a3b8")),
+    height=450,
+)
+
+st.subheader("🕸️ Radar Chart")
+st.plotly_chart(fig, use_container_width=True)
+
+
+# ============================================================
+# Detailed stats expanders
+# ============================================================
+n1, n2 = p1["display_name"], p2["display_name"]
+
+def _safe(raw: dict, key: str, decimals: int = 0):
+    v = raw.get(key)
+    if v is None:
+        return "—"
+    try:
+        if decimals:
+            return f"{float(v):.{decimals}f}"
+        return str(int(float(v)))
+    except (TypeError, ValueError):
+        return str(v)
+
+with st.expander("⚽ Attacking Statistics"):
+    st.dataframe(pd.DataFrame({
+        "Metric": ["Goals", "Shots", "xG"],
+        n1: [_safe(p1["raw"],"goals"), _safe(p1["raw"],"shots"), _safe(p1["raw"],"total_xg",2)],
+        n2: [_safe(p2["raw"],"goals"), _safe(p2["raw"],"shots"), _safe(p2["raw"],"total_xg",2)],
+    }).set_index("Metric"), use_container_width=True)
+
+with st.expander("🎯 Passing & Creativity"):
+    st.dataframe(pd.DataFrame({
+        "Metric": ["Total Passes", "Dribbles", "Carries"],
+        n1: [_safe(p1["raw"],"passes"), _safe(p1["raw"],"dribbles"), _safe(p1["raw"],"carries")],
+        n2: [_safe(p2["raw"],"passes"), _safe(p2["raw"],"dribbles"), _safe(p2["raw"],"carries")],
+    }).set_index("Metric"), use_container_width=True)
+
+with st.expander("🛡️ Defensive Statistics"):
+    st.dataframe(pd.DataFrame({
+        "Metric": ["Pressures", "Recoveries"],
+        n1: [_safe(p1["raw"],"pressures"), _safe(p1["raw"],"recoveries")],
+        n2: [_safe(p2["raw"],"pressures"), _safe(p2["raw"],"recoveries")],
+    }).set_index("Metric"), use_container_width=True)
+
+
+# ============================================================
+# Export
+# ============================================================
+st.subheader("📤 Export")
+
+# Build export dataframe from profile fields + stat fields
+export_rows: list[dict] = []
+for (lbl, v1_val), (_, v2_val) in zip(p1["profile_fields"], p2["profile_fields"]):
+    export_rows.append({"Field": lbl, n1: v1_val, n2: v2_val})
+for (lbl, v1_val), (_, v2_val) in zip(p1["stat_fields"], p2["stat_fields"]):
+    export_rows.append({"Field": lbl, n1: v1_val, n2: v2_val})
+
+export_df = pd.DataFrame(export_rows).set_index("Field")
+
+csv_buf = io.StringIO()
+export_df.to_csv(csv_buf)
+
+exp_col1, exp_col2, exp_col3 = st.columns(3)
+
+with exp_col1:
+    st.download_button(
+        label="📄 Download CSV",
+        data=csv_buf.getvalue().encode("utf-8"),
+        file_name=f"{p1['display_name']}_vs_{p2['display_name']}.csv",
+        mime="text/csv",
+        use_container_width=True,
+    )
+
+with exp_col2:
+    if st.button("📑 Download PDF", use_container_width=True):
+        st.toast("📑 PDF export coming soon!", icon="🚧")
+
+
+# ============================================================
+# AI Scouting Verdict
+# ============================================================
+st.subheader("🤖 AI Scouting Verdict")
+
+verdict = None
+try:
+    from ai.response_generator import generate_scouting_verdict
+    # Build a compact stats string for the AI
+    stats_str = export_df.to_string()
+    with st.spinner("Generating AI scouting verdict…"):
+        verdict = generate_scouting_verdict(
+            player1=p1["display_name"],
+            player2=p2["display_name"],
+            dataframe_text=stats_str,
+        )
+    st.markdown(verdict)
+except Exception as e:
+    st.warning(f"AI verdict unavailable: {e}")
+
+with exp_col3:
+    if st.button("📋 Copy AI Summary", use_container_width=True):
+        if verdict:
+            escaped = verdict.replace("`", "'").replace("\\", "\\\\").replace("\n", "\\n")
+            components.html(
+                f"""
+                <script>
+                navigator.clipboard.writeText(`{escaped}`).then(function() {{
+                    console.log('Copied');
+                }});
+                </script>
+                """,
+                height=0,
             )
-
-        st.markdown(verdict)
-
-    except Exception as e:
-        st.warning(f"AI verdict unavailable: {e}")
-
-    # --- Copy AI Summary ---
-    with export_col3:
-        if st.button("📋 Copy AI Summary", use_container_width=True):
-            if verdict:
-                # Inject JS to copy to clipboard
-                escaped = verdict.replace("`", "'").replace("\\", "\\\\").replace("\n", "\\n")
-                components.html(
-                    f"""
-                    <script>
-                    navigator.clipboard.writeText(`{escaped}`).then(function() {{
-                        console.log('Copied to clipboard');
-                    }});
-                    </script>
-                    """,
-                    height=0,
-                )
-                st.toast("✅ AI summary copied to clipboard!", icon="📋")
-            else:
-                st.toast("⚠️ Generate the verdict first.", icon="⚠️")
+            st.toast("✅ AI summary copied to clipboard!", icon="📋")
+        else:
+            st.toast("⚠️ Generate the verdict first.", icon="⚠️")
