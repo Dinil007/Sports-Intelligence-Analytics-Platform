@@ -415,12 +415,26 @@ if st.button("🔍 Compare Players", type="primary", use_container_width=True):
         ("📅", "Matches Played", "matches_played",  "qualified matches"),
     ]
 
-    def _fmt(v):
+    def _fmt(v) -> str:
+        """
+        Safely format a KPI value for display.
+        Handles: None, 'N/A', '', integers, floats, numeric strings.
+        Never calls int() or float() without validation.
+        """
+        # Explicit None or recognised N/A sentinels
         if v is None:
             return "N/A"
-        if isinstance(v, float) and v != int(v):
-            return f"{v:,.2f}"
-        return f"{int(v):,}"
+        if isinstance(v, str) and v.strip() in ("", "N/A", "n/a", "na", "—", "-"):
+            return "N/A"
+        # Attempt numeric conversion via try/except — never assume type
+        try:
+            f = float(v)
+        except (TypeError, ValueError):
+            return "N/A"
+        # Format: show 2 decimal places only for non-integer floats
+        if f != int(f):
+            return f"{f:,.2f}"
+        return f"{int(f):,}"
 
     def _kpi_row_html(icon, label, v1, v2, hint) -> str:
         f1 = _kpi_float_direct(v1)
