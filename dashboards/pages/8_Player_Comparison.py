@@ -15,7 +15,7 @@ import plotly.graph_objects as go
 from sqlalchemy import text
 
 from database.db_connection import engine
-from services.player_service import get_player_profile
+from services.player_service import get_player_profile, PROFILE_SCHEMA
 from ai.response_generator import generate_scouting_verdict
 
 
@@ -35,8 +35,17 @@ def load_player_names() -> list[str]:
 
 @st.cache_data(ttl=300, show_spinner=False)
 def load_profile(player_name: str) -> dict:
-    """Cached profile fetch — avoids re-querying on every Streamlit rerun."""
-    return get_player_profile(player_name)
+    """
+    Cached profile fetch — avoids re-querying on every Streamlit rerun.
+    Always returns a complete dict (all PROFILE_SCHEMA keys guaranteed present).
+    """
+    profile = get_player_profile(player_name)
+    # Guarantee every schema key is present even if an older cache entry is returned
+    from services.player_service import PROFILE_SCHEMA
+    for k, v in PROFILE_SCHEMA.items():
+        if k not in profile:
+            profile[k] = v
+    return profile
 
 
 @st.cache_data(ttl=300, show_spinner=False)
@@ -228,17 +237,28 @@ PROFILE_CARD_CSS = """
 # Profile card builder
 # ---------------------------------------------------------------------------
 
+# Default tier used when profile is incomplete
+_DEFAULT_TIER = {"label": "Unranked", "color": "#64748b"}
+
+
 def _esc(v) -> str:
-    return html.escape(str(v))
+    return html.escape(str(v) if v is not None else "N/A")
+
+
+def _safe(profile: dict, key: str, default="N/A"):
+    """Safe dict accessor — uses PROFILE_SCHEMA default if key is absent."""
+    schema_default = PROFILE_SCHEMA.get(key, default)
+    return profile.get(key, schema_default)
 
 
 def _field_html(label: str, value, na_val="N/A") -> str:
-    is_na = (str(value).strip() == na_val)
+    display = str(value) if value is not None else na_val
+    is_na = (display.strip() in ("", na_val))
     cls = "sp-value na" if is_na else "sp-value"
     return (
         f'<div class="sp-row">'
         f'<span class="sp-label">{_esc(label)}</span>'
-        f'<span class="{cls}">{_esc(value)}</span>'
+        f'<span class="{cls}">{_esc(display)}</span>'
         f'</div>'
     )
 
@@ -253,11 +273,16 @@ def _stat_chip(label: str, value) -> str:
 
 
 def build_profile_card(profile: dict) -> str:
-    name     = profile["player_name"]
-    nickname = profile["nickname"]
-    jersey   = profile["jersey_number"]
-    tier     = profile["sporta_tier"]
-    score    = profile["sporta_score"]
+    """Render a premium HTML profile card from a player profile dict.
+    Uses .get() with safe defaults for every field — never raises KeyError.
+    """
+    name     = _safe(profile, "player_name", "Unknown Player")
+    nickname = _safe(profile, "nickname")
+    jersey   = _safe(profile, "jersey_number")
+    score    = _safe(profile, "sporta_score")
+    # tier must be a dict with 'label' and 'color'
+    raw_tier = profile.get("sporta_tier", _DEFAULT_TIER)
+    tier     = raw_tier if isinstance(raw_tier, dict) else _DEFAULT_TIER
 
     # Initials avatar
     initials = "".join(p[:1] for p in name.split()[:2]).upper() or "P"
@@ -285,24 +310,24 @@ def build_profile_card(profile: dict) -> str:
         f'</div>'
     )
 
-    # Info fields
+    # Info fields — all via _safe() so missing keys show N/A
     fields_html = "".join([
-        _field_html("Club / Team",    profile["team"]),
-        _field_html("Nationality",    profile["nationality"]),
-        _field_html("Position",       profile["position"]),
-        _field_html("Age",            profile["age"]),
-        _field_html("Height",         profile["height"]),
-        _field_html("Preferred Foot", profile["preferred_foot"]),
-        _field_html("Matches Played", profile["matches_played"]),
+        _field_html("Club / Team",    _safe(profile, "team")),
+        _field_html("Nationality",    _safe(profile, "nationality")),
+        _field_html("Position",       _safe(profile, "position")),
+        _field_html("Age",            _safe(profile, "age")),
+        _field_html("Height",         _safe(profile, "height")),
+        _field_html("Preferred Foot", _safe(profile, "preferred_foot")),
+        _field_html("Matches Played", _safe(profile, "matches_played")),
     ])
 
-    # Stat chips
+    # Stat chips — all via _safe()
     chips_html = "".join([
-        _stat_chip("Goals",     profile["goals"]),
-        _stat_chip("xG",        profile["total_xg"]),
-        _stat_chip("Dribbles",  profile["dribbles"]),
-        _stat_chip("Recoveries",profile["recoveries"]),
-        _stat_chip("Pressures", profile["pressures"]),
+        _stat_chip("Goals",      _safe(profile, "goals")),
+        _stat_chip("xG",         _safe(profile, "total_xg")),
+        _stat_chip("Dribbles",   _safe(profile, "dribbles")),
+        _stat_chip("Recoveries", _safe(profile, "recoveries")),
+        _stat_chip("Pressures",  _safe(profile, "pressures")),
     ])
 
     return f"""
@@ -371,72 +396,210 @@ if st.button("🔍 Compare Players", type="primary", use_container_width=True):
 
     # ── Rich Profile Cards ──────────────────────────────────────────────────
     st.subheader("🏟️ Player Profiles")
-    st.markdown(PROFILE_CARD_CSS, unsafe_allow_html=True)
-    st.markdown(
+
+    card1_html = build_profile_card(profile1)
+    card2_html = build_profile_card(profile2)
+
+    # Use components.html() instead of st.markdown() to bypass Streamlit's
+    # HTML sanitizer, which strips custom CSS classes even with unsafe_allow_html=True.
+    components.html(
         f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+        <meta charset="utf-8">
+        <style>
+        * {{ box-sizing: border-box; margin: 0; padding: 0; }}
+        body {{ background: transparent; font-family: -apple-system, BlinkMacSystemFont,
+               'Segoe UI', Roboto, sans-serif; padding: 4px 0; }}
+
+        .sp-profile-grid {{
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 1.25rem;
+        }}
+        .sp-card {{
+            display: flex;
+            flex-direction: column;
+            gap: 0.85rem;
+            background: linear-gradient(145deg, #0f172a 0%, #1e293b 100%);
+            border: 1px solid rgba(148,163,184,0.2);
+            border-radius: 18px;
+            padding: 1.35rem;
+            box-shadow: 0 16px 48px rgba(0,0,0,0.4);
+        }}
+        .sp-header {{
+            display: flex; align-items: center; gap: 0.9rem;
+            padding-bottom: 0.85rem;
+            border-bottom: 1px solid rgba(148,163,184,0.15);
+        }}
+        .sp-avatar {{
+            flex: 0 0 48px; width: 48px; height: 48px;
+            border-radius: 13px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.05rem; font-weight: 900; color: #fff;
+            background: linear-gradient(135deg, #0ea5e9, #6366f1);
+            box-shadow: 0 4px 14px rgba(14,165,233,0.4);
+            letter-spacing: 1px;
+        }}
+        .sp-header-info {{ min-width: 0; flex: 1; }}
+        .sp-player-name {{
+            color: #f1f5f9; font-size: 1rem; font-weight: 800;
+            line-height: 1.3; overflow-wrap: anywhere; margin-bottom: 3px;
+        }}
+        .sp-nickname {{ color: #94a3b8; font-size: 0.78rem; font-style: italic; }}
+
+        .sp-tier-row {{
+            display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;
+        }}
+        .sp-tier-badge {{
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 3px 12px; border-radius: 999px;
+            font-size: 0.74rem; font-weight: 800; letter-spacing: 0.4px; color: #fff;
+        }}
+        .sp-score-pill {{
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 3px 10px; border-radius: 999px;
+            background: rgba(148,163,184,0.1); border: 1px solid rgba(148,163,184,0.2);
+            color: #e2e8f0; font-size: 0.76rem; font-weight: 700;
+        }}
+        .sp-score-label {{ color: #94a3b8; font-size: 0.7rem; }}
+        .sp-jersey {{
+            display: inline-flex; align-items: center; padding: 2px 9px;
+            border-radius: 999px;
+            background: rgba(14,165,233,0.12); border: 1px solid rgba(14,165,233,0.28);
+            color: #38bdf8; font-size: 0.72rem; font-weight: 800;
+        }}
+
+        .sp-fields {{ display: flex; flex-direction: column; gap: 0; }}
+        .sp-row {{
+            display: flex; justify-content: space-between; align-items: baseline;
+            gap: 0.75rem; padding: 7px 0;
+            border-bottom: 1px solid rgba(148,163,184,0.08);
+        }}
+        .sp-row:last-child {{ border-bottom: none; padding-bottom: 0; }}
+        .sp-label {{
+            color: #64748b; font-size: 0.72rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.5px; flex-shrink: 0;
+        }}
+        .sp-value {{
+            color: #e2e8f0; font-size: 0.84rem; font-weight: 700;
+            text-align: right; overflow-wrap: anywhere;
+        }}
+        .sp-value.na {{ color: #475569; font-weight: 500; font-style: italic; }}
+
+        .sp-stat-row {{
+            display: flex; gap: 0.4rem; flex-wrap: wrap;
+            padding-top: 0.5rem;
+            border-top: 1px solid rgba(148,163,184,0.1);
+        }}
+        .sp-stat-chip {{
+            display: flex; flex-direction: column; align-items: center;
+            padding: 5px 11px;
+            background: rgba(148,163,184,0.07);
+            border: 1px solid rgba(148,163,184,0.12);
+            border-radius: 9px; min-width: 52px;
+        }}
+        .sp-stat-chip-val {{ color: #f1f5f9; font-size: 0.88rem; font-weight: 800; }}
+        .sp-stat-chip-lbl {{
+            color: #64748b; font-size: 0.6rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.4px;
+        }}
+
+        @media (max-width: 600px) {{
+            .sp-profile-grid {{ grid-template-columns: 1fr; }}
+        }}
+        </style>
+        </head>
+        <body>
         <div class="sp-profile-grid">
-            {build_profile_card(profile1)}
-            {build_profile_card(profile2)}
+            {card1_html}
+            {card2_html}
         </div>
+        </body>
+        </html>
         """,
-        unsafe_allow_html=True,
+        height=580,
+        scrolling=False,
     )
+
 
     # ── KPI Metrics ─────────────────────────────────────────────────────────
     st.subheader("🏆 Key Performance Indicators")
     col1, col2 = st.columns(2)
 
     with col1:
-        s1 = float(player1_stats["sporta_score"]) if "sporta_score" in df.columns else 0.0
-        tier1 = profile1["sporta_tier"]
-        st.markdown(f"### {profile1['player_name']}")
+        s1_raw = player1_stats["sporta_score"] if "sporta_score" in df.columns else None
+        s1 = float(s1_raw) if s1_raw is not None else 0.0
+        tier1 = profile1.get("sporta_tier", _DEFAULT_TIER)
+        if not isinstance(tier1, dict):
+            tier1 = _DEFAULT_TIER
+        st.markdown(f"### {_safe(profile1, 'player_name')}")
         st.metric("SPORTA Score (0–100)", f"{s1:.2f}")
         st.markdown(
             f'<span style="background:{tier1["color"]};color:#fff;padding:3px 12px;'
             f'border-radius:12px;font-size:0.82rem;font-weight:700;">{tier1["label"]}</span>',
             unsafe_allow_html=True,
         )
-        st.metric("Matches Played", profile1["matches_played"])
-        st.metric("Goals",          profile1["goals"])
-        st.metric("xG",             profile1["total_xg"])
-        st.metric("Passes",         profile1["passes"])
-        st.metric("Dribbles",       profile1["dribbles"])
+        st.metric("Matches Played", _safe(profile1, "matches_played"))
+        st.metric("Goals",          _safe(profile1, "goals"))
+        st.metric("xG",             _safe(profile1, "total_xg"))
+        st.metric("Passes",         _safe(profile1, "passes"))
+        st.metric("Dribbles",       _safe(profile1, "dribbles"))
 
     with col2:
-        s2 = float(player2_stats["sporta_score"]) if "sporta_score" in df.columns else 0.0
-        tier2 = profile2["sporta_tier"]
-        st.markdown(f"### {profile2['player_name']}")
+        s2_raw = player2_stats["sporta_score"] if "sporta_score" in df.columns else None
+        s2 = float(s2_raw) if s2_raw is not None else 0.0
+        tier2 = profile2.get("sporta_tier", _DEFAULT_TIER)
+        if not isinstance(tier2, dict):
+            tier2 = _DEFAULT_TIER
+        st.markdown(f"### {_safe(profile2, 'player_name')}")
         st.metric("SPORTA Score (0–100)", f"{s2:.2f}", delta=f"{s2 - s1:+.2f}")
         st.markdown(
             f'<span style="background:{tier2["color"]};color:#fff;padding:3px 12px;'
             f'border-radius:12px;font-size:0.82rem;font-weight:700;">{tier2["label"]}</span>',
             unsafe_allow_html=True,
         )
-        st.metric("Matches Played", profile2["matches_played"])
-        st.metric("Goals",          profile2["goals"])
-        st.metric("xG",             profile2["total_xg"])
-        st.metric("Passes",         profile2["passes"])
-        st.metric("Dribbles",       profile2["dribbles"])
+        st.metric("Matches Played", _safe(profile2, "matches_played"))
+        st.metric("Goals",          _safe(profile2, "goals"))
+        st.metric("xG",             _safe(profile2, "total_xg"))
+        st.metric("Passes",         _safe(profile2, "passes"))
+        st.metric("Dribbles",       _safe(profile2, "dribbles"))
+
 
     # ── SPORTA Score bar ─────────────────────────────────────────────────────
     st.subheader("📊 SPORTA Score Comparison (0–100)")
     score_df = pd.DataFrame({
-        "Player":       [profile1["player_name"], profile2["player_name"]],
+        "Player":       [_safe(profile1, "player_name"), _safe(profile2, "player_name")],
         "SPORTA Score": [s1, s2],
     }).set_index("Player")
     st.bar_chart(score_df)
 
     # ── Raw stats side-by-side ───────────────────────────────────────────────
     st.subheader("📊 Raw Stats Side-by-Side")
+    p1n = _safe(profile1, "player_name")
+    p2n = _safe(profile2, "player_name")
+
+    def _to_num(v):
+        """Convert a profile value to float for charting; 0 if N/A or missing."""
+        try:
+            return float(v)
+        except (TypeError, ValueError):
+            return 0.0
+
     raw_df = pd.DataFrame({
         "Metric": ["Goals", "Dribbles", "Recoveries", "Pressures"],
-        profile1["player_name"]: [
-            profile1["goals"], profile1["dribbles"],
-            profile1["recoveries"], profile1["pressures"],
+        p1n: [
+            _to_num(_safe(profile1, "goals")),
+            _to_num(_safe(profile1, "dribbles")),
+            _to_num(_safe(profile1, "recoveries")),
+            _to_num(_safe(profile1, "pressures")),
         ],
-        profile2["player_name"]: [
-            profile2["goals"], profile2["dribbles"],
-            profile2["recoveries"], profile2["pressures"],
+        p2n: [
+            _to_num(_safe(profile2, "goals")),
+            _to_num(_safe(profile2, "dribbles")),
+            _to_num(_safe(profile2, "recoveries")),
+            _to_num(_safe(profile2, "pressures")),
         ],
     }).set_index("Metric")
     st.bar_chart(raw_df)
