@@ -814,11 +814,10 @@ if st.button("🔍 Compare Players", type="primary", use_container_width=True):
     # ── Professional Comparison Charts ──────────────────────────────────────
     st.subheader("📊 Performance Analytics")
 
-    # Player name labels used inside every chart — defined once here as
-    # explicit variables so _bar_chart() captures them as clean closures.
-    # Safe fallbacks prevent NameError if profiles are incomplete.
-    p1n = _safe(profile1, "player_name") or "Player 1"
-    p2n = _safe(profile2, "player_name") or "Player 2"
+    # Explicit name variables — passed as args to _bar_chart() to avoid
+    # any reliance on implicit closure / undeclared global variables.
+    p1n = p1_name if p1_name not in ("", "N/A", "Unknown Player") else "Player 1"
+    p2n = p2_name if p2_name not in ("", "N/A", "Unknown Player") else "Player 2"
 
     # Shared Plotly dark-theme layout base
     _CHART_LAYOUT = dict(
@@ -846,9 +845,9 @@ if st.button("🔍 Compare Players", type="primary", use_container_width=True):
         height=280,
     )
 
-    # Colour palette: Player 1 = sky-blue, Player 2 = amber
-    C1 = "#38bdf8"
-    C2 = "#f59e0b"
+    # Colour palette: Player 1 = sky-blue gradient, Player 2 = amber/orange
+    C1 = "#38bdf8"   # player 1
+    C2 = "#f59e0b"   # player 2
 
     def _pv(profile: dict, key: str) -> float | None:
         """Return numeric value from profile or None if unavailable."""
@@ -858,13 +857,17 @@ if st.button("🔍 Compare Players", type="primary", use_container_width=True):
         except (TypeError, ValueError):
             return None
 
-    def _bar_chart(title: str, key: str, fmt_suffix: str = "") -> go.Figure:
-        """Build a grouped horizontal bar chart for one KPI."""
+    def _bar_chart(title: str, key: str, n1: str, n2: str,
+                   fmt_suffix: str = "") -> go.Figure:
+        """
+        Build a bar chart comparing one KPI for two players.
+        n1 / n2 are passed explicitly — no hidden global-variable reads.
+        """
         v1 = _pv(profile1, key)
         v2 = _pv(profile2, key)
 
         if v1 is None and v2 is None:
-            # Both unavailable — return an empty placeholder figure
+            # Both unavailable — return a friendly placeholder figure
             fig = go.Figure()
             fig.add_annotation(
                 text=f"{title}<br><span style='color:#64748b;font-size:13px'>"
@@ -876,18 +879,18 @@ if st.button("🔍 Compare Players", type="primary", use_container_width=True):
             fig.update_layout(**_CHART_LAYOUT, title="")
             return fig
 
-        cats  = [p1n, p2n]
-        vals  = [v1 if v1 is not None else 0, v2 if v2 is not None else 0]
+        cats   = [n1, n2]
+        vals   = [v1 if v1 is not None else 0, v2 if v2 is not None else 0]
         colors = [C1, C2]
 
-        # Highlight winner
+        # Highlight the winning value in green
         if v1 is not None and v2 is not None and v1 != v2:
             win_idx = 0 if v1 > v2 else 1
-            colors[win_idx] = "#10B981"   # green for winner
+            colors[win_idx] = "#10B981"
 
         hover = [
-            f"<b>{p1n}</b><br>{title}: {v1 if v1 is not None else 'N/A'}{fmt_suffix}",
-            f"<b>{p2n}</b><br>{title}: {v2 if v2 is not None else 'N/A'}{fmt_suffix}",
+            f"<b>{n1}</b><br>{title}: {v1 if v1 is not None else 'N/A'}{fmt_suffix}",
+            f"<b>{n2}</b><br>{title}: {v2 if v2 is not None else 'N/A'}{fmt_suffix}",
         ]
 
         fig = go.Figure(go.Bar(
@@ -912,7 +915,7 @@ if st.button("🔍 Compare Players", type="primary", use_container_width=True):
     r1c1, r1c2 = st.columns(2)
     with r1c1:
         st.plotly_chart(
-            _bar_chart("⚽  Goals", "goals"),
+            _bar_chart("⚽  Goals", "goals", p1n, p2n),
             use_container_width=True, config={"displayModeBar": False},
         )
     with r1c2:
@@ -933,7 +936,7 @@ if st.button("🔍 Compare Players", type="primary", use_container_width=True):
             )
         else:
             st.plotly_chart(
-                _bar_chart("🎯  Assists", "assists"),
+                _bar_chart("🎯  Assists", "assists", p1n, p2n),
                 use_container_width=True, config={"displayModeBar": False},
             )
 
@@ -941,12 +944,12 @@ if st.button("🔍 Compare Players", type="primary", use_container_width=True):
     r2c1, r2c2 = st.columns(2)
     with r2c1:
         st.plotly_chart(
-            _bar_chart("📈  Expected Goals (xG)", "total_xg"),
+            _bar_chart("📈  Expected Goals (xG)", "total_xg", p1n, p2n),
             use_container_width=True, config={"displayModeBar": False},
         )
     with r2c2:
         st.plotly_chart(
-            _bar_chart("🏆  SPORTA Score (0–100)", "sporta_score"),
+            _bar_chart("🏆  SPORTA Score (0–100)", "sporta_score", p1n, p2n),
             use_container_width=True, config={"displayModeBar": False},
         )
 
@@ -954,12 +957,12 @@ if st.button("🔍 Compare Players", type="primary", use_container_width=True):
     r3c1, r3c2 = st.columns(2)
     with r3c1:
         st.plotly_chart(
-            _bar_chart("🔄  Total Passes", "passes"),
+            _bar_chart("🔄  Total Passes", "passes", p1n, p2n),
             use_container_width=True, config={"displayModeBar": False},
         )
     with r3c2:
         st.plotly_chart(
-            _bar_chart("👟  Successful Dribbles", "dribbles"),
+            _bar_chart("👟  Successful Dribbles", "dribbles", p1n, p2n),
             use_container_width=True, config={"displayModeBar": False},
         )
 
@@ -967,14 +970,15 @@ if st.button("🔍 Compare Players", type="primary", use_container_width=True):
     r4c1, r4c2 = st.columns(2)
     with r4c1:
         st.plotly_chart(
-            _bar_chart("🛡️  Ball Recoveries", "recoveries"),
+            _bar_chart("🛡️  Ball Recoveries", "recoveries", p1n, p2n),
             use_container_width=True, config={"displayModeBar": False},
         )
     with r4c2:
         st.plotly_chart(
-            _bar_chart("🔥  Pressures Applied", "pressures"),
+            _bar_chart("🔥  Pressures Applied", "pressures", p1n, p2n),
             use_container_width=True, config={"displayModeBar": False},
         )
+
 
     # ── Radar Chart (Strategic Overview) ────────────────────────────────────
     st.subheader("🕸️ Strategic Radar Overview")
