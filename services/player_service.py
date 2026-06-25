@@ -14,6 +14,40 @@ from database.player_repository import fetch_player_profile
 
 
 # ---------------------------------------------------------------------------
+# Schema — single source of truth for all guaranteed profile keys.
+# Every key MUST be present in a cleaned profile dict.
+# Values here are the safe defaults used when the database returns None.
+# ---------------------------------------------------------------------------
+PROFILE_SCHEMA: dict = {
+    # Identity
+    "player_name":    "Unknown Player",
+    "nickname":       "N/A",
+    "jersey_number":  "N/A",
+    "nationality":    "N/A",
+    "team":           "N/A",
+    # Not available in StatsBomb data
+    "position":       "N/A",
+    "age":            "N/A",
+    "height":         "N/A",
+    "weight":         "N/A",
+    "preferred_foot": "N/A",
+    # Performance
+    "matches_played": "N/A",
+    "sporta_score":   "N/A",
+    "goals":          "N/A",
+    "total_xg":       "N/A",
+    "passes":         "N/A",
+    "shots":          "N/A",
+    "carries":        "N/A",
+    "pressures":      "N/A",
+    "recoveries":     "N/A",
+    "dribbles":       "N/A",
+    # Tier badge dict
+    "sporta_tier":    {"label": "Unranked", "color": "#64748b"},
+}
+
+
+# ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
 
@@ -76,9 +110,13 @@ def _clean(raw: dict) -> dict:
     score_raw = raw.get("sporta_score")
     score     = _num(score_raw, decimals=2)
 
-    return {
+    # Start from a full copy of the schema so every key is guaranteed present
+    # even if raw is empty or missing fields (e.g. DB down, no rows matched).
+    result = dict(PROFILE_SCHEMA)
+
+    result.update({
         # Identity
-        "player_name":    _text(raw.get("player_name"), "Unknown"),
+        "player_name":    _text(raw.get("player_name"), "Unknown Player"),
         "nickname":       _text(raw.get("nickname")),
         "jersey_number":  _num(raw.get("jersey_number")),
         "nationality":    _text(raw.get("country_name")),
@@ -102,4 +140,6 @@ def _clean(raw: dict) -> dict:
         "dribbles":       _num(raw.get("dribbles")),
         # Tier badge
         "sporta_tier":    _sporta_tier(score_raw),
-    }
+    })
+
+    return result
