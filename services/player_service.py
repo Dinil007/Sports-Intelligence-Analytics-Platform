@@ -1,68 +1,16 @@
 """
 services/player_service.py
 ===========================
-Business logic layer for player profiles.
-Cleans raw DB rows, fills missing values with 'N/A',
-and returns structured dicts safe for UI consumption.
+Business / presentation logic for player profiles.
+Wraps database/player_repository.py and guarantees:
+  - All text fields default to "N/A" when unavailable.
+  - All numeric fields default to "N/A" (or 0 for totals).
+  - A SPORTA tier badge dict is always present.
+  - No SQL is executed here.
 """
 
 from __future__ import annotations
-
-from database.player_repository import fetch_player_profile, fetch_player_stats
-
-
-# ---------------------------------------------------------------------------
-# Field definitions  (label → DB key)
-# ---------------------------------------------------------------------------
-
-_NA = "N/A"
-
-_PROFILE_FIELDS: list[tuple[str, str]] = [
-    ("Full Name",      "player_name"),
-    ("Known As",       "nickname"),
-    ("Nationality",    "nationality"),
-    ("Club / Team",    "team_name"),
-    ("Jersey No.",     "jersey_number"),
-    ("Position",       "position"),        # not in DB → always N/A
-    ("Age",            "age"),             # not in DB → always N/A
-    ("Height",         "height"),          # not in DB → always N/A
-    ("Preferred Foot", "preferred_foot"),  # not in DB → always N/A
-]
-
-_STAT_FIELDS: list[tuple[str, str]] = [
-    ("Matches Played", "matches_played"),
-    ("Goals",          "goals"),
-    ("Expected Goals", "total_xg"),
-    ("Passes",         "passes"),
-    ("Shots",          "shots"),
-    ("Carries",        "carries"),
-    ("Dribbles",       "dribbles"),
-    ("Pressures",      "pressures"),
-    ("Recoveries",     "recoveries"),
-    ("SPORTA Score",   "sporta_score"),
-]
-
-
-# ---------------------------------------------------------------------------
-# Helper
-# ---------------------------------------------------------------------------
-
-def _clean(value) -> str:
-    """Return a display-safe string, or 'N/A' for None / empty."""
-    if value is None:
-        return _NA
-    s = str(value).strip()
-    return s if s not in ("", "None", "nan") else _NA
-
-
-def _fmt_float(value, decimals: int = 2) -> str:
-    """Format a numeric value to fixed decimals, or 'N/A'."""
-    if value is None:
-        return _NA
-    try:
-        return f"{float(value):.{decimals}f}"
-    except (TypeError, ValueError):
-        return _NA
+from database.player_repository import fetch_player_profile
 
 
 # ---------------------------------------------------------------------------
@@ -71,91 +19,87 @@ def _fmt_float(value, decimals: int = 2) -> str:
 
 def get_player_profile(player_name: str) -> dict:
     """
-    Return a fully-cleaned player profile dict.
+    Return a cleaned, display-ready profile dict for *player_name*.
 
-    Keys present:
-        profile_fields : list of (label, value_str) tuples for the card
-        stat_fields    : list of (label, value_str) tuples for KPI section
-        raw            : the raw DB dict (for internal calculations)
-        found          : bool – whether the player was found in dim_players
-        display_name   : short display name (nickname if available, else full)
-        initials       : 2-char initials string for avatar
-        sporta_score   : float | None
-        sporta_tier    : (label, hex_color) tuple
+    Guaranteed keys (never raises KeyError in the UI):
+      player_name, nickname, jersey_number, nationality, team,
+      position, age, height, weight, preferred_foot,
+      matches_played, sporta_score, goals, total_xg,
+      passes, shots, carries, pressures, recoveries, dribbles,
+      sporta_tier  -> {"label": str, "color": str}
     """
     raw = fetch_player_profile(player_name)
+    return _clean(raw)
 
-    # Fall back to stats-only if not in dim_players
-    if not raw:
-        raw = fetch_player_stats(player_name)
 
-    found = bool(raw)
+# ---------------------------------------------------------------------------
+# Internal helpers
+# ---------------------------------------------------------------------------
 
-    # Display name
-    nickname = _clean(raw.get("nickname"))
-    full_name = _clean(raw.get("player_name", player_name))
-    display_name = nickname if nickname != _NA else full_name
+def _text(val, default: str = "N/A") -> str:
+    if val is None:
+        return default
+    s = str(val).strip()
+    return s if s else default
 
-    # Initials
-    parts = display_name.split()
-    initials = "".join(p[0] for p in parts[:2]).upper() or "P"
 
-    # Profile card rows
-    profile_fields: list[tuple[str, str]] = []
-    for label, key in _PROFILE_FIELDS:
-        if key in ("total_xg",):
-            profile_fields.append((label, _fmt_float(raw.get(key))))
-        elif key == "jersey_number":
-            v = raw.get(key)
-            profile_fields.append((label, str(int(v)) if v is not None else _NA))
-        else:
-            profile_fields.append((label, _clean(raw.get(key))))
-
-    # Stat rows
-    stat_fields: list[tuple[str, str]] = []
-    for label, key in _STAT_FIELDS:
-        v = raw.get(key)
-        if key in ("total_xg", "sporta_score"):
-            stat_fields.append((label, _fmt_float(v)))
-        elif v is not None:
-            try:
-                stat_fields.append((label, str(int(float(v)))))
-            except (TypeError, ValueError):
-                stat_fields.append((label, _clean(v)))
-        else:
-            stat_fields.append((label, _NA))
-
-    # SPORTA Score
-    sc_raw = raw.get("sporta_score")
+def _num(val, decimals: int = 0, default: str = "N/A"):
+    if val is None:
+        return default
     try:
-        sporta_score: float | None = float(sc_raw) if sc_raw is not None else None
+        f = float(val)
+        if decimals:
+            return round(f, decimals)
+        return int(f)
     except (TypeError, ValueError):
-        sporta_score = None
+        return default
 
-    tier = _sporta_tier(sporta_score)
+
+def _sporta_tier(score) -> dict:
+    try:
+        s = float(score)
+    except (TypeError, ValueError):
+        return {"label": "Unranked", "color": "#64748b"}
+    if s >= 90:
+        return {"label": "Elite",            "color": "#10B981"}
+    elif s >= 80:
+        return {"label": "Excellent",        "color": "#3B82F6"}
+    elif s >= 70:
+        return {"label": "Good",             "color": "#F59E0B"}
+    elif s >= 60:
+        return {"label": "Average",          "color": "#8B5CF6"}
+    else:
+        return {"label": "Needs Improvement","color": "#EF4444"}
+
+
+def _clean(raw: dict) -> dict:
+    score_raw = raw.get("sporta_score")
+    score     = _num(score_raw, decimals=2)
 
     return {
-        "raw":           raw,
-        "found":         found,
-        "display_name":  display_name,
-        "full_name":     full_name,
-        "initials":      initials,
-        "profile_fields": profile_fields,
-        "stat_fields":   stat_fields,
-        "sporta_score":  sporta_score,
-        "sporta_tier":   tier,
+        # Identity
+        "player_name":    _text(raw.get("player_name"), "Unknown"),
+        "nickname":       _text(raw.get("nickname")),
+        "jersey_number":  _num(raw.get("jersey_number")),
+        "nationality":    _text(raw.get("country_name")),
+        "team":           _text(raw.get("team_name")),
+        # StatsBomb does not provide these fields
+        "position":       _text(raw.get("position")),
+        "age":            _num(raw.get("age")),
+        "height":         _text(raw.get("height")),
+        "weight":         _text(raw.get("weight")),
+        "preferred_foot": _text(raw.get("preferred_foot")),
+        # Performance
+        "matches_played": _num(raw.get("matches_played")),
+        "sporta_score":   score,
+        "goals":          _num(raw.get("goals")),
+        "total_xg":       _num(raw.get("total_xg"), decimals=2),
+        "passes":         _num(raw.get("passes")),
+        "shots":          _num(raw.get("shots")),
+        "carries":        _num(raw.get("carries")),
+        "pressures":      _num(raw.get("pressures")),
+        "recoveries":     _num(raw.get("recoveries")),
+        "dribbles":       _num(raw.get("dribbles")),
+        # Tier badge
+        "sporta_tier":    _sporta_tier(score_raw),
     }
-
-
-def _sporta_tier(score: float | None) -> tuple[str, str]:
-    if score is None:
-        return ("Unranked", "#6B7280")
-    if score >= 90:
-        return ("Elite",            "#10B981")
-    if score >= 80:
-        return ("Excellent",        "#3B82F6")
-    if score >= 70:
-        return ("Good",             "#F59E0B")
-    if score >= 60:
-        return ("Average",          "#8B5CF6")
-    return ("Needs Improvement",    "#EF4444")
