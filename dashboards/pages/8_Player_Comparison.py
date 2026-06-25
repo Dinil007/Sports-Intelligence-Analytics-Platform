@@ -1005,7 +1005,13 @@ if st.button("🔍 Compare Players", type="primary", use_container_width=True):
     if len(df) >= 2 and len(avail) >= 3:
         labels = [x[0] for x in avail]
         cols   = [x[1] for x in avail]
-        radar_colors = [C1, C2]
+        radar_colors      = [C1, C2]
+        # rgba() fills matching each line colour at 15% opacity.
+        # 8-digit hex (#rrggbbaa) is NOT valid in Plotly — use rgba() instead.
+        radar_fill_colors = [
+            "rgba(56, 189, 248, 0.15)",   # C1 = #38bdf8 sky-blue
+            "rgba(245, 158, 11, 0.15)",    # C2 = #f59e0b amber
+        ]
         fig_radar = go.Figure()
         for i, (_, row) in enumerate(df.iterrows()):
             vals = [
@@ -1019,10 +1025,9 @@ if st.button("🔍 Compare Players", type="primary", use_container_width=True):
                 fill="toself",
                 name=row["player_name"],
                 line=dict(color=radar_colors[i % 2], width=2),
-                fillcolor=radar_colors[i % 2].replace(")", ",0.15)").replace("rgb", "rgba")
-                          if "rgb" in radar_colors[i % 2]
-                          else radar_colors[i % 2] + "26",
+                fillcolor=radar_fill_colors[i % 2],
             ))
+
         fig_radar.update_layout(
             polar=dict(
                 bgcolor="rgba(15,23,42,0.6)",
