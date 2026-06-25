@@ -811,108 +811,245 @@ if st.button("🔍 Compare Players", type="primary", use_container_width=True):
 
 
 
-    # ── Detailed stats expandables ───────────────────────────────────────────
-    st.subheader("🔍 Detailed Statistics")
+    # ── Professional Comparison Charts ──────────────────────────────────────
+    st.subheader("📊 Performance Analytics")
 
-    # s1/s2 needed by radar chart below
-    s1_raw = player1_stats["sporta_score"] if "sporta_score" in df.columns else None
-    s2_raw = player2_stats["sporta_score"] if "sporta_score" in df.columns else None
-    s1 = float(s1_raw) if s1_raw is not None else 0.0
-    s2 = float(s2_raw) if s2_raw is not None else 0.0
+    # Shared Plotly dark-theme layout base
+    _CHART_LAYOUT = dict(
+        paper_bgcolor="rgba(15,23,42,0)",
+        plot_bgcolor="rgba(15,23,42,0)",
+        font=dict(family="'Segoe UI', Roboto, sans-serif", color="#cbd5e1", size=12),
+        margin=dict(l=8, r=8, t=48, b=8),
+        legend=dict(
+            orientation="h", yanchor="bottom", y=1.02,
+            xanchor="right", x=1,
+            bgcolor="rgba(0,0,0,0)",
+            font=dict(size=11),
+        ),
+        xaxis=dict(
+            showgrid=False,
+            zeroline=False,
+            tickfont=dict(size=11),
+        ),
+        yaxis=dict(
+            gridcolor="rgba(148,163,184,0.08)",
+            zeroline=False,
+            tickfont=dict(size=11),
+        ),
+        bargap=0.35,
+        height=280,
+    )
 
-    p1n = _safe(profile1, "player_name")
-    p2n = _safe(profile2, "player_name")
+    # Colour palette: Player 1 = sky-blue gradient, Player 2 = amber/orange
+    C1 = "#38bdf8"   # player 1
+    C2 = "#f59e0b"   # player 2
 
+    def _pv(profile: dict, key: str) -> float | None:
+        """Return numeric value from profile or None if unavailable."""
+        v = _safe(profile, key)
+        try:
+            return float(v)
+        except (TypeError, ValueError):
+            return None
 
-    def safe_val(stats, col):
-        if col in df.columns and pd.notnull(stats[col]):
-            return stats[col]
-        return "—"
+    def _bar_chart(title: str, key: str, fmt_suffix: str = "") -> go.Figure:
+        """Build a grouped horizontal bar chart for one KPI."""
+        v1 = _pv(profile1, key)
+        v2 = _pv(profile2, key)
 
-    with st.expander("⚽ Attacking Statistics"):
-        st.dataframe(pd.DataFrame({
-            "Metric": ["Goals", "Shots", "xG"],
-            p1n: [
-                safe_val(player1_stats, "goals"),
-                safe_val(player1_stats, "shots"),
-                safe_val(player1_stats, "total_xg"),
-            ],
-            p2n: [
-                safe_val(player2_stats, "goals"),
-                safe_val(player2_stats, "shots"),
-                safe_val(player2_stats, "total_xg"),
-            ],
-        }).set_index("Metric"), use_container_width=True)
+        if v1 is None and v2 is None:
+            # Both unavailable — return an empty placeholder figure
+            fig = go.Figure()
+            fig.add_annotation(
+                text=f"{title}<br><span style='color:#64748b;font-size:13px'>"
+                     f"Data unavailable</span>",
+                xref="paper", yref="paper", x=0.5, y=0.5,
+                showarrow=False,
+                font=dict(size=14, color="#94a3b8"),
+            )
+            fig.update_layout(**_CHART_LAYOUT, title="")
+            return fig
 
-    with st.expander("🎯 Passing & Creativity"):
-        st.dataframe(pd.DataFrame({
-            "Metric": ["Total Passes", "Dribbles", "Carries"],
-            p1n: [
-                safe_val(player1_stats, "passes"),
-                safe_val(player1_stats, "dribbles"),
-                safe_val(player1_stats, "carries"),
-            ],
-            p2n: [
-                safe_val(player2_stats, "passes"),
-                safe_val(player2_stats, "dribbles"),
-                safe_val(player2_stats, "carries"),
-            ],
-        }).set_index("Metric"), use_container_width=True)
+        cats  = [p1n, p2n]
+        vals  = [v1 if v1 is not None else 0, v2 if v2 is not None else 0]
+        colors = [C1, C2]
 
-    with st.expander("🛡️ Defensive Statistics"):
-        st.dataframe(pd.DataFrame({
-            "Metric": ["Pressures", "Recoveries"],
-            p1n: [
-                safe_val(player1_stats, "pressures"),
-                safe_val(player1_stats, "recoveries"),
-            ],
-            p2n: [
-                safe_val(player2_stats, "pressures"),
-                safe_val(player2_stats, "recoveries"),
-            ],
-        }).set_index("Metric"), use_container_width=True)
+        # Highlight winner
+        if v1 is not None and v2 is not None and v1 != v2:
+            win_idx = 0 if v1 > v2 else 1
+            colors[win_idx] = "#10B981"   # green for winner
 
-    # ── Radar Chart ──────────────────────────────────────────────────────────
+        hover = [
+            f"<b>{p1n}</b><br>{title}: {v1 if v1 is not None else 'N/A'}{fmt_suffix}",
+            f"<b>{p2n}</b><br>{title}: {v2 if v2 is not None else 'N/A'}{fmt_suffix}",
+        ]
+
+        fig = go.Figure(go.Bar(
+            x=cats, y=vals,
+            marker_color=colors,
+            marker_line_width=0,
+            hovertemplate="%{customdata}<extra></extra>",
+            customdata=hover,
+            text=[f"{v:,.1f}{fmt_suffix}" if v else "N/A" for v in vals],
+            textposition="outside",
+            textfont=dict(size=11, color="#e2e8f0"),
+        ))
+        fig.update_layout(
+            **_CHART_LAYOUT,
+            title=dict(text=title, font=dict(size=13, color="#f1f5f9"), x=0, xanchor="left"),
+        )
+        fig.update_yaxes(showticklabels=False, showgrid=False)
+        return fig
+
+    # ── 2-column chart grid ─────────────────────────────────────────────────
+    # Row 1: Goals | Assists
+    r1c1, r1c2 = st.columns(2)
+    with r1c1:
+        st.plotly_chart(
+            _bar_chart("⚽  Goals", "goals"),
+            use_container_width=True, config={"displayModeBar": False},
+        )
+    with r1c2:
+        # Assists not in StatsBomb — show friendly placeholder
+        a1 = _pv(profile1, "assists")
+        a2 = _pv(profile2, "assists")
+        if a1 is None and a2 is None:
+            st.markdown(
+                """
+                <div style="display:flex;align-items:center;justify-content:center;
+                     height:280px;border:1px dashed rgba(148,163,184,0.2);
+                     border-radius:12px;color:#475569;font-size:0.85rem;text-align:center;">
+                  🎯 <strong style="color:#64748b;margin-left:6px;">Assists</strong>
+                  &nbsp;— not available in StatsBomb dataset
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+        else:
+            st.plotly_chart(
+                _bar_chart("🎯  Assists", "assists"),
+                use_container_width=True, config={"displayModeBar": False},
+            )
+
+    # Row 2: xG | SPORTA Score
+    r2c1, r2c2 = st.columns(2)
+    with r2c1:
+        st.plotly_chart(
+            _bar_chart("📈  Expected Goals (xG)", "total_xg"),
+            use_container_width=True, config={"displayModeBar": False},
+        )
+    with r2c2:
+        st.plotly_chart(
+            _bar_chart("🏆  SPORTA Score (0–100)", "sporta_score"),
+            use_container_width=True, config={"displayModeBar": False},
+        )
+
+    # Row 3: Passes | Dribbles
+    r3c1, r3c2 = st.columns(2)
+    with r3c1:
+        st.plotly_chart(
+            _bar_chart("🔄  Total Passes", "passes"),
+            use_container_width=True, config={"displayModeBar": False},
+        )
+    with r3c2:
+        st.plotly_chart(
+            _bar_chart("👟  Successful Dribbles", "dribbles"),
+            use_container_width=True, config={"displayModeBar": False},
+        )
+
+    # Row 4: Recoveries | Pressures
+    r4c1, r4c2 = st.columns(2)
+    with r4c1:
+        st.plotly_chart(
+            _bar_chart("🛡️  Ball Recoveries", "recoveries"),
+            use_container_width=True, config={"displayModeBar": False},
+        )
+    with r4c2:
+        st.plotly_chart(
+            _bar_chart("🔥  Pressures Applied", "pressures"),
+            use_container_width=True, config={"displayModeBar": False},
+        )
+
+    # ── Radar Chart (Strategic Overview) ────────────────────────────────────
+    st.subheader("🕸️ Strategic Radar Overview")
+
     RADAR_CAPS = {
         "sporta_score": 100.0,
-        "goals":        50.0,
-        "total_xg":     40.0,
-        "shots":       500.0,
-        "passes":    25000.0,
-        "dribbles":   1000.0,
-        "carries":   15000.0,
-        "pressures":  3000.0,
-        "recoveries": 1000.0,
+        "goals":         50.0,
+        "total_xg":      40.0,
+        "shots":        500.0,
+        "passes":     25000.0,
+        "dribbles":    1000.0,
+        "carries":    15000.0,
+        "pressures":   3000.0,
+        "recoveries":  1000.0,
     }
     radar_labels = ["SPORTA", "Goals", "xG", "Shots",
                     "Passes", "Dribbles", "Carries", "Pressures", "Recoveries"]
     radar_cols   = ["sporta_score", "goals", "total_xg", "shots",
                     "passes", "dribbles", "carries", "pressures", "recoveries"]
 
-    avail = [(lbl, col) for lbl, col in zip(radar_labels, radar_cols) if col in df.columns]
+    avail = [(lbl, col) for lbl, col in zip(radar_labels, radar_cols)
+             if col in df.columns]
 
     if len(df) >= 2 and len(avail) >= 3:
         labels = [x[0] for x in avail]
         cols   = [x[1] for x in avail]
-        fig    = go.Figure()
-        for _, row in df.iterrows():
+        radar_colors = [C1, C2]
+        fig_radar = go.Figure()
+        for i, (_, row) in enumerate(df.iterrows()):
             vals = [
                 min(float(row[c]) / RADAR_CAPS.get(c, 1.0) * 100, 100.0)
                 if pd.notnull(row[c]) else 0.0
                 for c in cols
             ]
             vals.append(vals[0])
-            fig.add_trace(go.Scatterpolar(
+            fig_radar.add_trace(go.Scatterpolar(
                 r=vals, theta=labels + [labels[0]],
-                fill="toself", name=row["player_name"],
+                fill="toself",
+                name=row["player_name"],
+                line=dict(color=radar_colors[i % 2], width=2),
+                fillcolor=radar_colors[i % 2].replace(")", ",0.15)").replace("rgb", "rgba")
+                          if "rgb" in radar_colors[i % 2]
+                          else radar_colors[i % 2] + "26",
             ))
-        fig.update_layout(
-            title="Radar Comparison (Normalized 0–100)",
-            polar=dict(radialaxis=dict(visible=True, range=[0, 100])),
-            showlegend=True,
+        fig_radar.update_layout(
+            polar=dict(
+                bgcolor="rgba(15,23,42,0.6)",
+                radialaxis=dict(
+                    visible=True, range=[0, 100],
+                    tickfont=dict(size=9, color="#64748b"),
+                    gridcolor="rgba(148,163,184,0.12)",
+                    linecolor="rgba(148,163,184,0.1)",
+                ),
+                angularaxis=dict(
+                    tickfont=dict(size=11, color="#94a3b8"),
+                    gridcolor="rgba(148,163,184,0.12)",
+                    linecolor="rgba(148,163,184,0.1)",
+                ),
+            ),
+            paper_bgcolor="rgba(15,23,42,0)",
+            font=dict(family="'Segoe UI', Roboto, sans-serif", color="#cbd5e1"),
+            legend=dict(
+                orientation="h", yanchor="top", y=-0.05,
+                xanchor="center", x=0.5,
+                bgcolor="rgba(0,0,0,0)",
+                font=dict(size=12),
+            ),
+            margin=dict(l=30, r=30, t=30, b=30),
+            height=480,
+            title=dict(
+                text="Normalized % of Elite Benchmark",
+                font=dict(size=12, color="#64748b"),
+                x=0.5, xanchor="center",
+            ),
         )
-        st.subheader("🕸️ Radar Chart")
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig_radar, use_container_width=True,
+                        config={"displayModeBar": False})
+    else:
+        st.info("Not enough data to render the radar chart.")
+
+
 
     # ── Export ───────────────────────────────────────────────────────────────
     st.subheader("📤 Export")
