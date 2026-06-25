@@ -390,12 +390,282 @@ if st.button("🔍 Compare Players", type="primary", use_container_width=True):
     player1_stats = p1_row.iloc[0] if has_p1 else df.iloc[0]
     player2_stats = p2_row.iloc[0] if has_p2 else df.iloc[1]
 
-    # ── Raw stats table ─────────────────────────────────────────────────────
-    st.subheader("📊 Statistics Overview")
-    st.dataframe(df, use_container_width=True, hide_index=True)
+    # ── Executive KPI Dashboard ──────────────────────────────────────────────
+    st.subheader("🏆 Executive KPI Comparison")
 
-    # ── Rich Profile Cards ──────────────────────────────────────────────────
-    st.subheader("🏟️ Player Profiles")
+    # ── Helper: safely coerce a profile value to float (returns None if N/A)
+    def _kpi_float(profile: dict, key: str):
+        v = _safe(profile, key)
+        try:
+            return float(v)
+        except (TypeError, ValueError):
+            return None
+
+    # ── Build per-metric rows ─────────────────────────────────────────────────
+    KPI_DEFS = [
+        ("🏆", "SPORTA Score",   "sporta_score",   "0–100 composite"),
+        ("⚽", "Goals",          "goals",           "career total"),
+        ("🎯", "xG",             "total_xg",        "expected goals"),
+        ("🔄", "Passes",         "passes",          "career total"),
+        ("👟", "Dribbles",       "dribbles",        "career total"),
+        ("🛡️","Recoveries",     "recoveries",      "career total"),
+        ("🔥", "Pressures",      "pressures",       "career total"),
+        ("📦", "Carries",        "carries",         "career total"),
+        ("🎯", "Assists",        "assists",         "not in dataset"),
+        ("📅", "Matches Played", "matches_played",  "qualified matches"),
+    ]
+
+    def _fmt(v):
+        if v is None:
+            return "N/A"
+        if isinstance(v, float) and v != int(v):
+            return f"{v:,.2f}"
+        return f"{int(v):,}"
+
+    def _kpi_row_html(icon, label, v1, v2, hint) -> str:
+        f1 = _kpi_float_direct(v1)
+        f2 = _kpi_float_direct(v2)
+
+        # Determine winner
+        if f1 is not None and f2 is not None and f1 != f2:
+            w1 = f1 > f2
+            w2 = f2 > f1
+        else:
+            w1 = w2 = False
+
+        def _cell(val, winner: bool) -> str:
+            disp = _fmt(val)
+            is_na = (disp == "N/A")
+            if is_na:
+                return (
+                    f'<div class="kpi-cell na">'
+                    f'<span class="kpi-val na-val">N/A</span>'
+                    f'</div>'
+                )
+            if winner:
+                return (
+                    f'<div class="kpi-cell winner">'
+                    f'<span class="kpi-val win-val">{disp}</span>'
+                    f'<span class="win-badge">🏆</span>'
+                    f'</div>'
+                )
+            return (
+                f'<div class="kpi-cell">'
+                f'<span class="kpi-val">{disp}</span>'
+                f'</div>'
+            )
+
+        return (
+            f'<div class="kpi-row">'
+            f'  <div class="kpi-label-col">'
+            f'    <span class="kpi-icon">{icon}</span>'
+            f'    <div><div class="kpi-name">{label}</div>'
+            f'    <div class="kpi-hint">{hint}</div></div>'
+            f'  </div>'
+            f'  {_cell(v1, w1)}'
+            f'  {_cell(v2, w2)}'
+            f'</div>'
+        )
+
+    def _kpi_float_direct(v):
+        try:
+            return float(v)
+        except (TypeError, ValueError):
+            return None
+
+    # Gather values
+    kpi_rows_html = ""
+    for icon, label, key, hint in KPI_DEFS:
+        v1 = _safe(profile1, key)
+        v2 = _safe(profile2, key)
+        kpi_rows_html += _kpi_row_html(icon, label, v1, v2, hint)
+
+    p1_name = _safe(profile1, "player_name")
+    p2_name = _safe(profile2, "player_name")
+    p1_ini  = "".join(x[:1] for x in p1_name.split()[:2]).upper() or "P"
+    p2_ini  = "".join(x[:1] for x in p2_name.split()[:2]).upper() or "P"
+    t1      = profile1.get("sporta_tier", _DEFAULT_TIER)
+    t2      = profile2.get("sporta_tier", _DEFAULT_TIER)
+    if not isinstance(t1, dict): t1 = _DEFAULT_TIER
+    if not isinstance(t2, dict): t2 = _DEFAULT_TIER
+
+    components.html(
+        f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+        <meta charset="utf-8">
+        <style>
+        *, *::before, *::after {{ box-sizing: border-box; margin: 0; padding: 0; }}
+        body {{
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: transparent;
+            color: #e2e8f0;
+            padding: 2px 0 8px;
+        }}
+
+        /* ── Outer wrapper ── */
+        .kpi-wrap {{
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            border: 1px solid rgba(148,163,184,0.18);
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.45);
+            background: linear-gradient(160deg, #0c1524 0%, #0f2236 100%);
+        }}
+
+        /* ── Header banner ── */
+        .kpi-header {{
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            align-items: center;
+            background: linear-gradient(90deg, #0f172a 0%, #1e293b 100%);
+            border-bottom: 1px solid rgba(148,163,184,0.15);
+            padding: 0;
+        }}
+        .kpi-header-label {{
+            padding: 14px 18px;
+            color: #64748b;
+            font-size: 0.7rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }}
+        .kpi-player-head {{
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 14px 18px;
+            border-left: 1px solid rgba(148,163,184,0.12);
+        }}
+        .kpi-avatar {{
+            flex: 0 0 38px; width: 38px; height: 38px;
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.9rem; font-weight: 900; color: #fff;
+            letter-spacing: 1px;
+        }}
+        .av1 {{ background: linear-gradient(135deg, #0ea5e9, #6366f1);
+                box-shadow: 0 3px 12px rgba(14,165,233,0.4); }}
+        .av2 {{ background: linear-gradient(135deg, #f59e0b, #ef4444);
+                box-shadow: 0 3px 12px rgba(245,158,11,0.4); }}
+        .kpi-pname {{
+            font-size: 0.82rem; font-weight: 800;
+            color: #f1f5f9; overflow-wrap: anywhere; line-height: 1.25;
+        }}
+        .kpi-tier {{
+            display: inline-block;
+            margin-top: 3px;
+            padding: 1px 8px; border-radius: 999px;
+            font-size: 0.64rem; font-weight: 800; color: #fff;
+        }}
+
+        /* ── KPI rows ── */
+        .kpi-row {{
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            align-items: center;
+            border-bottom: 1px solid rgba(148,163,184,0.07);
+            transition: background 0.15s;
+        }}
+        .kpi-row:last-child {{ border-bottom: none; }}
+        .kpi-row:hover {{ background: rgba(148,163,184,0.04); }}
+
+        .kpi-label-col {{
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 11px 18px;
+        }}
+        .kpi-icon {{ font-size: 1rem; flex-shrink: 0; }}
+        .kpi-name {{
+            font-size: 0.78rem; font-weight: 700; color: #cbd5e1; line-height: 1.2;
+        }}
+        .kpi-hint {{
+            font-size: 0.62rem; color: #475569; font-weight: 500; margin-top: 1px;
+        }}
+
+        .kpi-cell {{
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 11px 18px;
+            border-left: 1px solid rgba(148,163,184,0.07);
+        }}
+        .kpi-val {{
+            font-size: 0.9rem; font-weight: 800; color: #e2e8f0;
+        }}
+        .na-val {{ color: #334155; font-weight: 500; font-style: italic; }}
+        .win-val {{ color: #10B981; }}
+        .win-badge {{
+            font-size: 0.75rem;
+            background: rgba(16,185,129,0.15);
+            border: 1px solid rgba(16,185,129,0.3);
+            border-radius: 6px;
+            padding: 1px 5px;
+        }}
+
+        /* ── Footer ── */
+        .kpi-footer {{
+            padding: 10px 18px;
+            background: rgba(148,163,184,0.04);
+            border-top: 1px solid rgba(148,163,184,0.1);
+            font-size: 0.65rem; color: #475569; text-align: center;
+        }}
+
+        @media (max-width: 560px) {{
+            .kpi-name {{ font-size: 0.7rem; }}
+            .kpi-val  {{ font-size: 0.8rem; }}
+            .kpi-label-col, .kpi-cell {{ padding: 9px 10px; gap: 6px; }}
+        }}
+        </style>
+        </head>
+        <body>
+        <div class="kpi-wrap">
+
+          <!-- Header -->
+          <div class="kpi-header">
+            <div class="kpi-header-label">Metric</div>
+
+            <div class="kpi-player-head">
+              <div class="kpi-avatar av1">{_esc(p1_ini)}</div>
+              <div>
+                <div class="kpi-pname">{_esc(p1_name)}</div>
+                <span class="kpi-tier" style="background:{_esc(t1['color'])};">
+                  {_esc(t1['label'])}
+                </span>
+              </div>
+            </div>
+
+            <div class="kpi-player-head">
+              <div class="kpi-avatar av2">{_esc(p2_ini)}</div>
+              <div>
+                <div class="kpi-pname">{_esc(p2_name)}</div>
+                <span class="kpi-tier" style="background:{_esc(t2['color'])};">
+                  {_esc(t2['label'])}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- KPI rows -->
+          {kpi_rows_html}
+
+          <div class="kpi-footer">
+            🏆 = better value &nbsp;|&nbsp; N/A = not available in StatsBomb dataset
+          </div>
+
+        </div>
+        </body>
+        </html>
+        """,
+        height=620,
+        scrolling=True,
+    )
+
+
 
     card1_html = build_profile_card(profile1)
     card2_html = build_profile_card(profile2)
@@ -524,90 +794,21 @@ if st.button("🔍 Compare Players", type="primary", use_container_width=True):
     )
 
 
-    # ── KPI Metrics ─────────────────────────────────────────────────────────
-    st.subheader("🏆 Key Performance Indicators")
-    col1, col2 = st.columns(2)
-
-    with col1:
-        s1_raw = player1_stats["sporta_score"] if "sporta_score" in df.columns else None
-        s1 = float(s1_raw) if s1_raw is not None else 0.0
-        tier1 = profile1.get("sporta_tier", _DEFAULT_TIER)
-        if not isinstance(tier1, dict):
-            tier1 = _DEFAULT_TIER
-        st.markdown(f"### {_safe(profile1, 'player_name')}")
-        st.metric("SPORTA Score (0–100)", f"{s1:.2f}")
-        st.markdown(
-            f'<span style="background:{tier1["color"]};color:#fff;padding:3px 12px;'
-            f'border-radius:12px;font-size:0.82rem;font-weight:700;">{tier1["label"]}</span>',
-            unsafe_allow_html=True,
-        )
-        st.metric("Matches Played", _safe(profile1, "matches_played"))
-        st.metric("Goals",          _safe(profile1, "goals"))
-        st.metric("xG",             _safe(profile1, "total_xg"))
-        st.metric("Passes",         _safe(profile1, "passes"))
-        st.metric("Dribbles",       _safe(profile1, "dribbles"))
-
-    with col2:
-        s2_raw = player2_stats["sporta_score"] if "sporta_score" in df.columns else None
-        s2 = float(s2_raw) if s2_raw is not None else 0.0
-        tier2 = profile2.get("sporta_tier", _DEFAULT_TIER)
-        if not isinstance(tier2, dict):
-            tier2 = _DEFAULT_TIER
-        st.markdown(f"### {_safe(profile2, 'player_name')}")
-        st.metric("SPORTA Score (0–100)", f"{s2:.2f}", delta=f"{s2 - s1:+.2f}")
-        st.markdown(
-            f'<span style="background:{tier2["color"]};color:#fff;padding:3px 12px;'
-            f'border-radius:12px;font-size:0.82rem;font-weight:700;">{tier2["label"]}</span>',
-            unsafe_allow_html=True,
-        )
-        st.metric("Matches Played", _safe(profile2, "matches_played"))
-        st.metric("Goals",          _safe(profile2, "goals"))
-        st.metric("xG",             _safe(profile2, "total_xg"))
-        st.metric("Passes",         _safe(profile2, "passes"))
-        st.metric("Dribbles",       _safe(profile2, "dribbles"))
 
 
-    # ── SPORTA Score bar ─────────────────────────────────────────────────────
-    st.subheader("📊 SPORTA Score Comparison (0–100)")
-    score_df = pd.DataFrame({
-        "Player":       [_safe(profile1, "player_name"), _safe(profile2, "player_name")],
-        "SPORTA Score": [s1, s2],
-    }).set_index("Player")
-    st.bar_chart(score_df)
-
-    # ── Raw stats side-by-side ───────────────────────────────────────────────
-    st.subheader("📊 Raw Stats Side-by-Side")
-    p1n = _safe(profile1, "player_name")
-    p2n = _safe(profile2, "player_name")
-
-    def _to_num(v):
-        """Convert a profile value to float for charting; 0 if N/A or missing."""
-        try:
-            return float(v)
-        except (TypeError, ValueError):
-            return 0.0
-
-    raw_df = pd.DataFrame({
-        "Metric": ["Goals", "Dribbles", "Recoveries", "Pressures"],
-        p1n: [
-            _to_num(_safe(profile1, "goals")),
-            _to_num(_safe(profile1, "dribbles")),
-            _to_num(_safe(profile1, "recoveries")),
-            _to_num(_safe(profile1, "pressures")),
-        ],
-        p2n: [
-            _to_num(_safe(profile2, "goals")),
-            _to_num(_safe(profile2, "dribbles")),
-            _to_num(_safe(profile2, "recoveries")),
-            _to_num(_safe(profile2, "pressures")),
-        ],
-    }).set_index("Metric")
-    st.bar_chart(raw_df)
 
     # ── Detailed stats expandables ───────────────────────────────────────────
     st.subheader("🔍 Detailed Statistics")
-    p1n = profile1["player_name"]
-    p2n = profile2["player_name"]
+
+    # s1/s2 needed by radar chart below
+    s1_raw = player1_stats["sporta_score"] if "sporta_score" in df.columns else None
+    s2_raw = player2_stats["sporta_score"] if "sporta_score" in df.columns else None
+    s1 = float(s1_raw) if s1_raw is not None else 0.0
+    s2 = float(s2_raw) if s2_raw is not None else 0.0
+
+    p1n = _safe(profile1, "player_name")
+    p2n = _safe(profile2, "player_name")
+
 
     def safe_val(stats, col):
         if col in df.columns and pd.notnull(stats[col]):
