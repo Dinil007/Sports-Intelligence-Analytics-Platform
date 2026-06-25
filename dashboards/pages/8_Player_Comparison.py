@@ -814,6 +814,12 @@ if st.button("🔍 Compare Players", type="primary", use_container_width=True):
     # ── Professional Comparison Charts ──────────────────────────────────────
     st.subheader("📊 Performance Analytics")
 
+    # Player name labels used inside every chart — defined once here as
+    # explicit variables so _bar_chart() captures them as clean closures.
+    # Safe fallbacks prevent NameError if profiles are incomplete.
+    p1n = _safe(profile1, "player_name") or "Player 1"
+    p2n = _safe(profile2, "player_name") or "Player 2"
+
     # Shared Plotly dark-theme layout base
     _CHART_LAYOUT = dict(
         paper_bgcolor="rgba(15,23,42,0)",
@@ -840,9 +846,9 @@ if st.button("🔍 Compare Players", type="primary", use_container_width=True):
         height=280,
     )
 
-    # Colour palette: Player 1 = sky-blue gradient, Player 2 = amber/orange
-    C1 = "#38bdf8"   # player 1
-    C2 = "#f59e0b"   # player 2
+    # Colour palette: Player 1 = sky-blue, Player 2 = amber
+    C1 = "#38bdf8"
+    C2 = "#f59e0b"
 
     def _pv(profile: dict, key: str) -> float | None:
         """Return numeric value from profile or None if unavailable."""
