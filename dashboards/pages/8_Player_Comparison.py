@@ -980,8 +980,197 @@ if st.button("🔍 Compare Players", type="primary", use_container_width=True):
         )
 
 
+    # ── Categorized Statistics ───────────────────────────────────────────────
+    st.subheader("📋 Statistics by Category")
+
+    def _sv(stats_row, col: str):
+        """
+        Safe value from a DataFrame row.
+        Returns the raw value if column exists and is not null, else None.
+        """
+        if col in df.columns and pd.notnull(stats_row.get(col, None)):
+            return stats_row[col]
+        return None
+
+    def _disp(v) -> str:
+        """Format a stat value for display; returns 'N/A' for missing."""
+        if v is None:
+            return "N/A"
+        try:
+            f = float(v)
+        except (TypeError, ValueError):
+            return "N/A"
+        return f"{f:,.1f}" if f != int(f) else f"{int(f):,}"
+
+    def render_stat_section(icon: str, title: str, metrics: list[tuple]) -> None:
+        """
+        Render one categorized stat section via components.html().
+
+        metrics: list of (display_label, col_key) tuples.
+                 col_key is looked up in player1_stats / player2_stats
+                 OR profile1/profile2 as fallback.
+        """
+        rows_html = ""
+        for label, col in metrics:
+            raw1 = _sv(player1_stats, col)
+            raw2 = _sv(player2_stats, col)
+
+            # Fallback to profile dict (for metrics not in df but in profile)
+            if raw1 is None:
+                pv1 = _safe(profile1, col)
+                raw1 = None if pv1 in ("N/A", "", None) else pv1
+            if raw2 is None:
+                pv2 = _safe(profile2, col)
+                raw2 = None if pv2 in ("N/A", "", None) else pv2
+
+            d1 = _disp(raw1)
+            d2 = _disp(raw2)
+
+            # Winner detection
+            try:
+                f1, f2 = float(raw1), float(raw2)
+                p1_wins = f1 > f2
+                p2_wins = f2 > f1
+            except (TypeError, ValueError):
+                p1_wins = p2_wins = False
+
+            def _val_cell(disp, wins):
+                if disp == "N/A":
+                    return (f'<td class="sv na">{disp}</td>')
+                if wins:
+                    return (f'<td class="sv win">{disp} <span class="wbadge">▲</span></td>')
+                return f'<td class="sv">{disp}</td>'
+
+            rows_html += (
+                f'<tr>'
+                f'<td class="sl">{html.escape(label)}</td>'
+                f'{_val_cell(d1, p1_wins)}'
+                f'{_val_cell(d2, p2_wins)}'
+                f'</tr>'
+            )
+
+        # Truncate names for header if very long
+        h1 = p1n[:22] + "…" if len(p1n) > 24 else p1n
+        h2 = p2n[:22] + "…" if len(p2n) > 24 else p2n
+
+        components.html(f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+        <meta charset="utf-8">
+        <style>
+        *, *::before, *::after {{ box-sizing: border-box; margin: 0; padding: 0; }}
+        body {{
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: transparent;
+            padding: 2px 0 4px;
+        }}
+        .section-title {{
+            font-size: 0.9rem; font-weight: 800; color: #94a3b8;
+            text-transform: uppercase; letter-spacing: 1px;
+            margin-bottom: 6px;
+        }}
+        table {{
+            width: 100%; border-collapse: collapse;
+            border: 1px solid rgba(148,163,184,0.15);
+            border-radius: 14px; overflow: hidden;
+            background: linear-gradient(160deg, #0f172a 0%, #1a2744 100%);
+        }}
+        thead tr {{
+            background: linear-gradient(90deg, #0f172a 0%, #1e293b 100%);
+            border-bottom: 1px solid rgba(148,163,184,0.18);
+        }}
+        th {{
+            padding: 10px 16px; text-align: left;
+            font-size: 0.72rem; font-weight: 800;
+            text-transform: uppercase; letter-spacing: 0.7px;
+            color: #64748b;
+        }}
+        th.ph1 {{ color: {html.escape(C1)}; }}
+        th.ph2 {{ color: {html.escape(C2)}; }}
+        tbody tr {{
+            border-bottom: 1px solid rgba(148,163,184,0.06);
+            transition: background 0.12s;
+        }}
+        tbody tr:last-child {{ border-bottom: none; }}
+        tbody tr:hover {{ background: rgba(148,163,184,0.04); }}
+        td.sl {{
+            padding: 9px 16px;
+            font-size: 0.8rem; font-weight: 700; color: #94a3b8;
+            width: 38%;
+        }}
+        td.sv {{
+            padding: 9px 16px;
+            font-size: 0.88rem; font-weight: 800; color: #e2e8f0;
+            width: 31%;
+        }}
+        td.sv.win {{ color: #10b981; }}
+        td.sv.na  {{ color: #334155; font-style: italic; font-weight: 500; }}
+        .wbadge {{
+            font-size: 0.65rem;
+            background: rgba(16,185,129,0.18);
+            border: 1px solid rgba(16,185,129,0.35);
+            border-radius: 4px;
+            padding: 1px 4px; margin-left: 4px;
+            color: #10b981;
+        }}
+        </style>
+        </head>
+        <body>
+        <table>
+          <thead>
+            <tr>
+              <th>Metric</th>
+              <th class="ph1">{html.escape(h1)}</th>
+              <th class="ph2">{html.escape(h2)}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows_html}
+          </tbody>
+        </table>
+        </body>
+        </html>
+        """, height=48 + 38 * len(metrics), scrolling=False)
+
+    # ── Section definitions ──────────────────────────────────────────────────
+    STAT_SECTIONS = [
+        ("⚽", "Attacking", [
+            ("Goals",               "goals"),
+            ("Shots",               "shots"),
+            ("Expected Goals (xG)", "total_xg"),
+            ("Assists",             "assists"),       # N/A — not in StatsBomb
+        ]),
+        ("🎯", "Creativity", [
+            ("Total Passes",        "passes"),
+            ("Key Passes",          "key_passes"),    # N/A — not in StatsBomb
+            ("Dribbles",            "dribbles"),
+            ("Carries",             "carries"),
+        ]),
+        ("🛡️", "Defensive", [
+            ("Recoveries",          "recoveries"),
+            ("Pressures Applied",   "pressures"),
+            ("Tackles",             "tackles"),       # N/A — not in StatsBomb
+            ("Interceptions",       "interceptions"), # N/A — not in StatsBomb
+        ]),
+    ]
+
+    sc1, sc2, sc3 = st.columns(3)
+    col_refs = [sc1, sc2, sc3]
+
+    for col_ref, (icon, title, metrics) in zip(col_refs, STAT_SECTIONS):
+        with col_ref:
+            st.markdown(
+                f'<div style="font-size:0.82rem;font-weight:800;color:#94a3b8;'
+                f'text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">'
+                f'{icon} {html.escape(title)}</div>',
+                unsafe_allow_html=True,
+            )
+            render_stat_section(icon, title, metrics)
+
     # ── Radar Chart (Strategic Overview) ────────────────────────────────────
     st.subheader("🕸️ Strategic Radar Overview")
+
 
     RADAR_CAPS = {
         "sporta_score": 100.0,
