@@ -16,7 +16,15 @@ from sqlalchemy import text
 
 from database.db_connection import engine
 from services.player_service import get_player_profile, PROFILE_SCHEMA
+from services.chart_service import (
+    RADAR_BENCHMARKS,
+    RADAR_PLAYER_COLORS,
+    get_available_metrics,
+    build_radar_data,
+)
 from ai.response_generator import generate_scouting_verdict
+from ai.scouting_report import generate_scouting_report
+from exports.export_utils import export_comparison_csv, export_comparison_pdf, export_ai_report_text
 
 
 # ---------------------------------------------------------------------------
@@ -1000,29 +1008,33 @@ if st.button("🔍 Compare Players", type="primary", use_container_width=True):
             f = float(v)
         except (TypeError, ValueError):
             return "N/A"
-        return f"{f:,.1f}" if f != int(f) else f"{int(f):,}"
+        return f"{int(f):,}" if f == int(f) else f"{f:,.1f}"
 
-    def render_stat_section(icon: str, title: str, metrics: list[tuple]) -> None:
+    def _resolve(player: dict, col: str):
+        """Resolve a metric value: stats row first, then profile fallback."""
+        raw = _sv(player["stats"], col)
+        if raw is None:
+            pv = _safe(player["profile"], col)
+            raw = None if pv in ("N/A", "", None) else pv
+        return raw
+
+    def render_category_card(title: str, metrics: list[tuple],
+                             player1: dict, player2: dict) -> str:
         """
-        Render one categorized stat section via components.html().
+        Render a single category card as an HTML string (no components.html call).
 
-        metrics: list of (display_label, col_key) tuples.
-                 col_key is looked up in player1_stats / player2_stats
-                 OR profile1/profile2 as fallback.
+        title    : card title incl. icon, e.g. "⚽ Attacking"
+        metrics  : list of (display_label, col_key) tuples
+        player1  : dict with keys 'stats' and 'profile'
+        player2  : dict with keys 'stats' and 'profile'
+
+        Table headers use the fixed labels "Player 1" / "Player 2" so they
+        never wrap; full names are shown in a legend bar above the grid.
         """
         rows_html = ""
         for label, col in metrics:
-            raw1 = _sv(player1_stats, col)
-            raw2 = _sv(player2_stats, col)
-
-            # Fallback to profile dict (for metrics not in df but in profile)
-            if raw1 is None:
-                pv1 = _safe(profile1, col)
-                raw1 = None if pv1 in ("N/A", "", None) else pv1
-            if raw2 is None:
-                pv2 = _safe(profile2, col)
-                raw2 = None if pv2 in ("N/A", "", None) else pv2
-
+            raw1 = _resolve(player1, col)
+            raw2 = _resolve(player2, col)
             d1 = _disp(raw1)
             d2 = _disp(raw2)
 
@@ -1036,9 +1048,10 @@ if st.button("🔍 Compare Players", type="primary", use_container_width=True):
 
             def _val_cell(disp, wins):
                 if disp == "N/A":
-                    return (f'<td class="sv na">{disp}</td>')
+                    return f'<td class="sv na">{disp}</td>'
                 if wins:
-                    return (f'<td class="sv win">{disp} <span class="wbadge">▲</span></td>')
+                    return (f'<td class="sv win">{disp}'
+                            f'<span class="wbadge">▲</span></td>')
                 return f'<td class="sv">{disp}</td>'
 
             rows_html += (
@@ -1049,252 +1062,414 @@ if st.button("🔍 Compare Players", type="primary", use_container_width=True):
                 f'</tr>'
             )
 
-        # Truncate names for header if very long
-        h1 = p1n[:22] + "…" if len(p1n) > 24 else p1n
-        h2 = p2n[:22] + "…" if len(p2n) > 24 else p2n
+        return f"""
+        <div class="cat-card">
+          <div class="cat-card-title">{html.escape(title)}</div>
+          <table>
+            <thead>
+              <tr>
+                <th class="th-metric">Metric</th>
+                <th class="th-p p1">Player 1</th>
+                <th class="th-p p2">Player 2</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows_html}
+            </tbody>
+          </table>
+        </div>
+        """
 
-        components.html(f"""
-        <!DOCTYPE html>
-        <html>
-        <head>
-        <meta charset="utf-8">
-        <style>
-        *, *::before, *::after {{ box-sizing: border-box; margin: 0; padding: 0; }}
-        body {{
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: transparent;
-            padding: 2px 0 4px;
-        }}
-        .section-title {{
-            font-size: 0.9rem; font-weight: 800; color: #94a3b8;
-            text-transform: uppercase; letter-spacing: 1px;
-            margin-bottom: 6px;
-        }}
-        table {{
-            width: 100%; border-collapse: collapse;
-            border: 1px solid rgba(148,163,184,0.15);
-            border-radius: 14px; overflow: hidden;
-            background: linear-gradient(160deg, #0f172a 0%, #1a2744 100%);
-        }}
-        thead tr {{
-            background: linear-gradient(90deg, #0f172a 0%, #1e293b 100%);
-            border-bottom: 1px solid rgba(148,163,184,0.18);
-        }}
-        th {{
-            padding: 10px 16px; text-align: left;
-            font-size: 0.72rem; font-weight: 800;
-            text-transform: uppercase; letter-spacing: 0.7px;
-            color: #64748b;
-        }}
-        th.ph1 {{ color: {html.escape(C1)}; }}
-        th.ph2 {{ color: {html.escape(C2)}; }}
-        tbody tr {{
-            border-bottom: 1px solid rgba(148,163,184,0.06);
-            transition: background 0.12s;
-        }}
-        tbody tr:last-child {{ border-bottom: none; }}
-        tbody tr:hover {{ background: rgba(148,163,184,0.04); }}
-        td.sl {{
-            padding: 9px 16px;
-            font-size: 0.8rem; font-weight: 700; color: #94a3b8;
-            width: 38%;
-        }}
-        td.sv {{
-            padding: 9px 16px;
-            font-size: 0.88rem; font-weight: 800; color: #e2e8f0;
-            width: 31%;
-        }}
-        td.sv.win {{ color: #10b981; }}
-        td.sv.na  {{ color: #334155; font-style: italic; font-weight: 500; }}
-        .wbadge {{
-            font-size: 0.65rem;
-            background: rgba(16,185,129,0.18);
-            border: 1px solid rgba(16,185,129,0.35);
-            border-radius: 4px;
-            padding: 1px 4px; margin-left: 4px;
-            color: #10b981;
-        }}
-        </style>
-        </head>
-        <body>
-        <table>
-          <thead>
-            <tr>
-              <th>Metric</th>
-              <th class="ph1">{html.escape(h1)}</th>
-              <th class="ph2">{html.escape(h2)}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows_html}
-          </tbody>
-        </table>
-        </body>
-        </html>
-        """, height=48 + 38 * len(metrics), scrolling=False)
-
-    # ── Section definitions ──────────────────────────────────────────────────
-    STAT_SECTIONS = [
-        ("⚽", "Attacking", [
-            ("Goals",               "goals"),
-            ("Shots",               "shots"),
-            ("Expected Goals (xG)", "total_xg"),
-            ("Assists",             "assists"),       # N/A — not in StatsBomb
+    # ── Category definitions (4 categories → 2×2 grid) ───────────────────────
+    CATEGORIES = [
+        ("⚽ Attacking", [
+            ("Goals", "goals"),
+            ("Shots", "shots"),
+            ("xG",    "total_xg"),
         ]),
-        ("🎯", "Creativity", [
-            ("Total Passes",        "passes"),
-            ("Key Passes",          "key_passes"),    # N/A — not in StatsBomb
-            ("Dribbles",            "dribbles"),
-            ("Carries",             "carries"),
+        ("🎯 Creativity", [
+            ("Assists",      "assists"),
+            ("Key Passes",   "key_passes"),
+            ("Total Passes", "passes"),
         ]),
-        ("🛡️", "Defensive", [
-            ("Recoveries",          "recoveries"),
-            ("Pressures Applied",   "pressures"),
-            ("Tackles",             "tackles"),       # N/A — not in StatsBomb
-            ("Interceptions",       "interceptions"), # N/A — not in StatsBomb
+        ("👟 Ball Progression", [
+            ("Dribbles", "dribbles"),
+            ("Carries",  "carries"),
+        ]),
+        ("🛡️ Defensive", [
+            ("Recoveries",    "recoveries"),
+            ("Pressures",     "pressures"),
+            ("Tackles",       "tackles"),
+            ("Interceptions", "interceptions"),
         ]),
     ]
 
-    sc1, sc2, sc3 = st.columns(3)
-    col_refs = [sc1, sc2, sc3]
+    # Player context bundles (stats row + profile fallback)
+    p1_ctx = {"stats": player1_stats, "profile": profile1}
+    p2_ctx = {"stats": player2_stats, "profile": profile2}
 
-    for col_ref, (icon, title, metrics) in zip(col_refs, STAT_SECTIONS):
-        with col_ref:
-            st.markdown(
-                f'<div style="font-size:0.82rem;font-weight:800;color:#94a3b8;'
-                f'text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">'
-                f'{icon} {html.escape(title)}</div>',
-                unsafe_allow_html=True,
-            )
-            render_stat_section(icon, title, metrics)
+    cards_html = "".join(
+        render_category_card(title, metrics, p1_ctx, p2_ctx)
+        for title, metrics in CATEGORIES
+    )
+
+    # Single components.html → all four cards share one CSS grid, guaranteeing
+    # equal widths and stretch-equal heights. Full names live in a legend bar
+    # above the grid; table headers use "Player 1"/"Player 2" (never wrap).
+    components.html(f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+    <meta charset="utf-8">
+    <style>
+    *, *::before, *::after {{ box-sizing: border-box; margin: 0; padding: 0; }}
+    body {{
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background: transparent;
+        color: #e2e8f0;
+        padding: 2px 0 6px;
+    }}
+
+    /* ── Name legend above the grid ── */
+    .cat-legend {{
+        display: flex;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+        align-items: center;
+        margin-bottom: 0.85rem;
+        padding: 10px 14px;
+        background: linear-gradient(90deg, rgba(15,23,42,0.6), rgba(30,41,59,0.6));
+        border: 1px solid rgba(148,163,184,0.15);
+        border-radius: 12px;
+    }}
+    .cat-legend-item {{ display: flex; align-items: center; gap: 8px; min-width: 0; }}
+    .cat-dot {{ width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }}
+    .cat-dot.p1 {{ background: {html.escape(C1)}; }}
+    .cat-dot.p2 {{ background: {html.escape(C2)}; }}
+    .cat-legend-label {{
+        font-size: 0.7rem; font-weight: 800; color: #64748b;
+        text-transform: uppercase; letter-spacing: 0.6px; flex-shrink: 0;
+    }}
+    .cat-legend-name {{
+        font-size: 0.88rem; font-weight: 800; color: #f1f5f9;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        max-width: 260px;
+    }}
+
+    /* ── 2×2 grid ── */
+    .cat-grid {{
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 1.1rem;
+        align-items: stretch;
+    }}
+
+    /* ── Card ── */
+    .cat-card {{
+        display: flex; flex-direction: column;
+        background: linear-gradient(160deg, #0f172a 0%, #1a2744 100%);
+        border: 1px solid rgba(148,163,184,0.18);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 16px 48px rgba(0,0,0,0.4);
+        min-height: 250px;
+    }}
+    .cat-card-title {{
+        padding: 12px 16px;
+        background: linear-gradient(90deg, #0f172a 0%, #1e293b 100%);
+        border-bottom: 1px solid rgba(148,163,184,0.15);
+        font-size: 0.82rem; font-weight: 800; color: #f1f5f9;
+        text-transform: uppercase; letter-spacing: 0.8px;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }}
+
+    table {{ width: 100%; border-collapse: collapse; }}
+    thead tr {{
+        background: rgba(148,163,184,0.04);
+        border-bottom: 1px solid rgba(148,163,184,0.12);
+    }}
+    th {{
+        padding: 9px 14px;
+        font-size: 0.68rem; font-weight: 800;
+        text-transform: uppercase; letter-spacing: 0.6px;
+        color: #64748b;
+        white-space: nowrap;
+    }}
+    th.th-metric {{ text-align: left; width: 40%; }}
+    th.th-p      {{ text-align: right; width: 30%; }}
+    th.th-p.p1   {{ color: {html.escape(C1)}; }}
+    th.th-p.p2   {{ color: {html.escape(C2)}; }}
+
+    tbody tr {{
+        border-bottom: 1px solid rgba(148,163,184,0.06);
+        transition: background 0.12s;
+    }}
+    tbody tr:last-child {{ border-bottom: none; }}
+    tbody tr:hover {{ background: rgba(148,163,184,0.04); }}
+
+    td.sl {{
+        padding: 9px 14px;
+        font-size: 0.8rem; font-weight: 700; color: #94a3b8;
+        white-space: nowrap;
+    }}
+    td.sv {{
+        padding: 9px 14px;
+        font-size: 0.88rem; font-weight: 800; color: #e2e8f0;
+        text-align: right; white-space: nowrap;
+    }}
+    td.sv.win {{ color: #10b981; }}
+    td.sv.na  {{ color: #334155; font-style: italic; font-weight: 500; }}
+    .wbadge {{
+        font-size: 0.62rem;
+        background: rgba(16,185,129,0.18);
+        border: 1px solid rgba(16,185,129,0.35);
+        border-radius: 4px;
+        padding: 1px 4px; margin-left: 5px;
+        color: #10b981;
+    }}
+
+    @media (max-width: 720px) {{
+        .cat-grid {{ grid-template-columns: 1fr; }}
+    }}
+    </style>
+    </head>
+    <body>
+    <div class="cat-legend">
+      <div class="cat-legend-item">
+        <span class="cat-dot p1"></span>
+        <span class="cat-legend-label">Player 1</span>
+        <span class="cat-legend-name">{html.escape(p1n)}</span>
+      </div>
+      <div class="cat-legend-item">
+        <span class="cat-dot p2"></span>
+        <span class="cat-legend-label">Player 2</span>
+        <span class="cat-legend-name">{html.escape(p2n)}</span>
+      </div>
+    </div>
+    <div class="cat-grid">
+      {cards_html}
+    </div>
+    </body>
+    </html>
+    """, height=600, scrolling=True)
 
     # ── Radar Chart (Strategic Overview) ────────────────────────────────────
-    st.subheader("🕸️ Strategic Radar Overview")
+    # Styled card header with title + subtitle (replaces plain st.subheader)
+    st.markdown(
+        """
+        <div style="
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            border: 1px solid rgba(148,163,184,0.18);
+            border-radius: 14px;
+            padding: 16px 20px;
+            margin-bottom: 12px;
+            box-shadow: 0 12px 36px rgba(0,0,0,0.35);
+        ">
+            <div style="font-size:1.15rem;font-weight:800;color:#f1f5f9;">
+                🕸️ Strategic Radar Overview
+            </div>
+            <div style="font-size:0.82rem;color:#94a3b8;margin-top:4px;">
+                Normalized comparison across key football performance metrics.
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
+    # Determine which metrics are available in the DataFrame (shared axes)
+    avail_metrics = get_available_metrics(df.columns)
 
-    RADAR_CAPS = {
-        "sporta_score": 100.0,
-        "goals":         50.0,
-        "total_xg":      40.0,
-        "shots":        500.0,
-        "passes":     25000.0,
-        "dribbles":    1000.0,
-        "carries":    15000.0,
-        "pressures":   3000.0,
-        "recoveries":  1000.0,
-    }
-    radar_labels = ["SPORTA", "Goals", "xG", "Shots",
-                    "Passes", "Dribbles", "Carries", "Pressures", "Recoveries"]
-    radar_cols   = ["sporta_score", "goals", "total_xg", "shots",
-                    "passes", "dribbles", "carries", "pressures", "recoveries"]
+    if len(df) >= 2 and len(avail_metrics) >= 3:
+        try:
+            fig_radar = go.Figure()
 
-    avail = [(lbl, col) for lbl, col in zip(radar_labels, radar_cols)
-             if col in df.columns]
+            # Build one filled polygon per player using normalized 0–100 values.
+            # Normalization logic lives in services/chart_service.py.
+            for i, (_, row) in enumerate(df.iterrows()):
+                labels, values, raw_values = build_radar_data(row, avail_metrics)
+                palette = RADAR_PLAYER_COLORS[i % len(RADAR_PLAYER_COLORS)]
 
-    if len(df) >= 2 and len(avail) >= 3:
-        labels = [x[0] for x in avail]
-        cols   = [x[1] for x in avail]
-        radar_colors      = [C1, C2]
-        # rgba() fills matching each line colour at 15% opacity.
-        # 8-digit hex (#rrggbbaa) is NOT valid in Plotly — use rgba() instead.
-        radar_fill_colors = [
-            "rgba(56, 189, 248, 0.15)",   # C1 = #38bdf8 sky-blue
-            "rgba(245, 158, 11, 0.15)",    # C2 = #f59e0b amber
-        ]
-        fig_radar = go.Figure()
-        for i, (_, row) in enumerate(df.iterrows()):
-            vals = [
-                min(float(row[c]) / RADAR_CAPS.get(c, 1.0) * 100, 100.0)
-                if pd.notnull(row[c]) else 0.0
-                for c in cols
-            ]
-            vals.append(vals[0])
-            fig_radar.add_trace(go.Scatterpolar(
-                r=vals, theta=labels + [labels[0]],
-                fill="toself",
-                name=row["player_name"],
-                line=dict(color=radar_colors[i % 2], width=2),
-                fillcolor=radar_fill_colors[i % 2],
-            ))
+                # Hover tooltip: shows the metric, raw value, and normalized %
+                hover_text = [
+                    f"<b>{lbl}</b><br>"
+                    f"Raw: {('N/A' if rv is None else f'{float(rv):,.1f}')}<br>"
+                    f"Normalized: {val:.0f}/100"
+                    for lbl, val, rv in zip(labels[:-1], values[:-1], raw_values[:-1])
+                ]
+                hover_text.append(hover_text[0])  # close the loop
 
-        fig_radar.update_layout(
-            polar=dict(
-                bgcolor="rgba(15,23,42,0.6)",
-                radialaxis=dict(
-                    visible=True, range=[0, 100],
-                    tickfont=dict(size=9, color="#64748b"),
-                    gridcolor="rgba(148,163,184,0.12)",
-                    linecolor="rgba(148,163,184,0.1)",
+                fig_radar.add_trace(go.Scatterpolar(
+                    r=values,
+                    theta=labels,
+                    fill="toself",
+                    fillcolor=palette["fill"],
+                    line=dict(color=palette["line"], width=2.5),
+                    name=row["player_name"],
+                    hovertemplate="%{customdata}<extra></extra>",
+                    customdata=hover_text,
+                    opacity=0.95,
+                ))
+
+            fig_radar.update_layout(
+                polar=dict(
+                    bgcolor="rgba(15,23,42,0.6)",
+                    radialaxis=dict(
+                        visible=True,
+                        range=[0, 100],
+                        tickvals=[0, 25, 50, 75, 100],  # Updated tick marks
+                        ticktext=["0", "25", "50", "75", "100"],
+                        tickfont=dict(size=10, color="#64748b"),
+                        gridcolor="rgba(148,163,184,0.15)",
+                        linecolor="rgba(148,163,184,0.12)",
+                        showline=True,  # Ensure radial axis line is shown
+                        linewidth=1,
+                    ),
+                    angularaxis=dict(
+                        tickfont=dict(size=13, color="#94a3b8"),
+                        gridcolor="rgba(148,163,184,0.15)",
+                        linecolor="rgba(148,163,184,0.12)",
+                    ),
                 ),
-                angularaxis=dict(
-                    tickfont=dict(size=11, color="#94a3b8"),
-                    gridcolor="rgba(148,163,184,0.12)",
-                    linecolor="rgba(148,163,184,0.1)",
+                paper_bgcolor="rgba(15,23,42,0)",
+                font=dict(family="'Segoe UI', Roboto, sans-serif", color="#cbd5e1"),
+                legend=dict(
+                    orientation="h",
+                    yanchor="bottom", # Changed to top-right
+                    y=1.1,            # Adjusted position
+                    xanchor="right",
+                    x=1,
+                    bgcolor="rgba(0,0,0,0)",
+                    font=dict(size=13, color="#e2e8f0"),
                 ),
-            ),
-            paper_bgcolor="rgba(15,23,42,0)",
-            font=dict(family="'Segoe UI', Roboto, sans-serif", color="#cbd5e1"),
-            legend=dict(
-                orientation="h", yanchor="top", y=-0.05,
-                xanchor="center", x=0.5,
-                bgcolor="rgba(0,0,0,0)",
-                font=dict(size=12),
-            ),
-            margin=dict(l=30, r=30, t=30, b=30),
-            height=480,
-            title=dict(
-                text="Normalized % of Elite Benchmark",
-                font=dict(size=12, color="#64748b"),
-                x=0.5, xanchor="center",
-            ),
-        )
-        st.plotly_chart(fig_radar, use_container_width=True,
-                        config={"displayModeBar": False})
+                margin=dict(l=80, r=80, t=80, b=60),
+                height=750,
+                width=750,
+                showlegend=True,
+            )
+            # Center the chart within the Streamlit column
+            _, radar_col, _ = st.columns([1, 6, 1])
+            with radar_col:
+                st.plotly_chart(
+                    fig_radar,
+                    use_container_width=True,
+                    config={"displayModeBar": False},
+                )
+        except Exception as e:
+            st.warning(f"Radar chart could not be rendered: {e}")
     else:
-        st.info("Not enough data to render the radar chart.")
+        st.info(
+            "Not enough data to render the radar chart. "
+            "At least 3 comparable metrics are required."
+        )
 
 
+
+    # ── Export ───────────────────────────────────────────────────────────────
+    # ── AI Scouting Report ───────────────────────────────────────────────────
+    st.subheader("📝 AI Scouting Report")
+
+    # Generate the report once for display and export
+    report = generate_scouting_report(player1_stats, player2_stats)
+
+    # Helper to render report sections
+    def _render_report_section(title, content, icon=None):
+        icon_html = f"<span style=\"margin-right:8px;\">{icon}</span>" if icon else ""
+        if isinstance(content, list):
+            if content:
+                items_html = "".join([f"<li>{html.escape(item)}</li>" for item in content])
+                content_html = f"<ul>{items_html}</ul>"
+            else:
+                content_html = "<p style=\"color:#64748b;font-style:italic;\">N/A</p>"
+        else:
+            content_html = f"<p>{html.escape(content)}</p>"
+        
+        st.markdown(f"""
+            <div style="
+                background: linear-gradient(145deg, #0f172a 0%, #1e293b 100%);
+                border: 1px solid rgba(148,163,184,0.18);
+                border-radius: 14px;
+                padding: 16px 20px;
+                margin-bottom: 12px;
+                box-shadow: 0 12px 36px rgba(0,0,0,0.35);
+            ">
+                <div style="font-size:1.1rem;font-weight:800;color:#f1f5f9;margin-bottom:10px;">
+                    {icon_html}{html.escape(title)}
+                </div>
+                <div style="font-size:0.9rem;color:#e2e8f0;line-height:1.6;">
+                    {content_html}
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+
+    _render_report_section("Best Attacker", report["best_attacker"], "⚽")
+    _render_report_section("Best Creator", report["best_creator"], "🎯")
+    _render_report_section("Best Ball Carrier", report["best_ball_carrier"], "👟")
+    _render_report_section("Best Defender", report["best_defender"], "🛡️")
+
+    col_s1, col_s2 = st.columns(2)
+    with col_s1:
+        _render_report_section(f"Key Strengths ({p1_name})", report["strengths_player1"], "💪")
+    with col_s2:
+        _render_report_section(f"Key Strengths ({p2_name})", report["strengths_player2"], "💪")
+
+    col_w1, col_w2 = st.columns(2)
+    with col_w1:
+        _render_report_section(f"Key Weaknesses ({p1_name})", report["weaknesses_player1"], "⚠️")
+    with col_w2:
+        _render_report_section(f"Key Weaknesses ({p2_name})", report["weaknesses_player2"], "⚠️")
+
+    _render_report_section("Tactical Recommendation", report["tactical_recommendation"], "🧠")
+    _render_report_section("Overall Verdict", report["overall_verdict"], "🏆")
 
     # ── Export ───────────────────────────────────────────────────────────────
     st.subheader("📤 Export")
     ex1, ex2, ex3 = st.columns(3)
 
-    csv_buffer = io.StringIO()
-    df.to_csv(csv_buffer, index=False)
+    # CSV Export
+    csv_data = export_comparison_csv(df)
     with ex1:
         st.download_button(
-            "📄 Download CSV",
-            data=csv_buffer.getvalue().encode("utf-8"),
-            file_name=f"{player1}_vs_{player2}.csv",
+            label="📄 Download CSV",
+            data=csv_data,
+            file_name=f"{p1_name}_vs_{p2_name}_comparison.csv",
             mime="text/csv",
             use_container_width=True,
         )
+
+    # PDF Export
+    # PDF Export
     with ex2:
-        if st.button("📑 Download PDF", use_container_width=True):
-            st.toast("PDF export coming soon!", icon="🚧")
-
-    # ── AI Scouting Verdict ──────────────────────────────────────────────────
-    st.subheader("🤖 AI Scouting Verdict")
-    verdict = None
-    try:
-        with st.spinner("Generating AI scouting verdict..."):
-            verdict = generate_scouting_verdict(
-                player1=player1,
-                player2=player2,
-                dataframe_text=df.to_string(index=False),
+        pdf_data = export_comparison_pdf(profile1, profile2, player1_stats, player2_stats)
+        if pdf_data:
+            st.download_button(
+                label="📑 Download PDF Report",
+                data=pdf_data,
+                file_name=f"{p1_name}_vs_{p2_name}_report.pdf",
+                mime="application/pdf",
+                use_container_width=True,
             )
-        st.markdown(verdict)
-    except Exception as e:
-        st.warning(f"AI verdict unavailable: {e}")
+        else:
+            st.info("PDF export unavailable (ReportLab not installed).")
 
+
+    # AI Report Export
+    ai_report_text_content = export_ai_report_text(report, p1_name, p2_name)
     with ex3:
-        if st.button("📋 Copy AI Summary", use_container_width=True):
-            if verdict:
-                escaped = verdict.replace("`", "'").replace("\\", "\\\\").replace("\n", "\\n")
-                components.html(
-                    f"<script>navigator.clipboard.writeText(`{escaped}`);</script>",
-                    height=0,
-                )
-                st.toast("✅ AI summary copied!", icon="📋")
-            else:
-                st.toast("⚠️ Generate the verdict first.", icon="⚠️")
+        st.download_button(
+            label="📋 Download AI Report (TXT)",
+            data=ai_report_text_content.encode("utf-8"),
+            file_name=f"{p1_name}_vs_{p2_name}_ai_report.txt",
+            mime="text/plain",
+            use_container_width=True,
+        )
+
+        if st.button("📋 Copy AI Report Text", use_container_width=True):
+            escaped_report = ai_report_text_content.replace("`", "\'").replace("\\", "\\\\").replace("\n", "\\n")
+            components.html(
+                f"<script>navigator.clipboard.writeText(`{escaped_report}`);</script>",
+                height=0,
+            )
+            st.toast("✅ AI report copied!", icon="📋")
+
+
+
