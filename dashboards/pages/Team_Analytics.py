@@ -11,6 +11,11 @@ import pandas as pd
 import plotly.express as px
 from database.db_connection import engine
 
+# Auth guard - require authentication
+from auth.streamlit_auth import is_authenticated
+if not is_authenticated():
+    st.stop()
+
 st.title("🏟️ Team Performance Analytics")
 st.markdown("Analyze overall team standings, goal production, and xG efficiency across the league.")
 

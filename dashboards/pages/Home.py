@@ -7,7 +7,7 @@ from datetime import datetime
 # -----------------------------------
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 if str(PROJECT_ROOT) not in sys.path:
-    sys.path.insert(0, str(PROJECT_ROOT))
+    sys.path.append(str(PROJECT_ROOT))
 
 # -----------------------------------
 # Imports
@@ -17,6 +17,11 @@ import pandas as pd
 import plotly.express as px
 
 from database.db_connection import engine
+
+# Auth guard - force authentication check
+from auth.streamlit_auth import is_authenticated
+if not is_authenticated():
+    st.stop()
 
 # Page Config handled by central entry point app.py
 
@@ -104,27 +109,27 @@ st.subheader("⚡ Quick Actions")
 
 ROLE_QUICK_ACTIONS = {
     "admin": [
-        ("🤖 AI Chat", "pages/7_AI_Chat.py"),
-        ("⚽ Player Comparison", "pages/8_Player_Comparison.py"),
-        ("📋 Scouting Reports", "pages/9_Scouting_Report.py"),
-        ("🔄 Transfer Recommendations", "pages/4_🔄_Transfer_Recommendations.py"),
+        ("🤖 AI Chat", "dashboards/pages/7_AI_Chat.py"),
+        ("⚽ Player Comparison", "dashboards/pages/8_Player_Comparison.py"),
+        ("📋 Scouting Reports", "dashboards/pages/9_Scouting_Report.py"),
+        ("🔄 Transfer Recommendations", "dashboards/pages/4_🔄_Transfer_Recommendations.py"),
     ],
     "scout": [
-        ("🔍 Scouting", "pages/1_🔍_Scouting.py"),
-        ("⚽ Player Comparison", "pages/8_Player_Comparison.py"),
-        ("📋 Scouting Reports", "pages/9_Scouting_Report.py"),
-        ("🔄 Transfer Recommendations", "pages/4_🔄_Transfer_Recommendations.py"),
+        ("🔍 Scouting", "dashboards/pages/1_🔍_Scouting.py"),
+        ("⚽ Player Comparison", "dashboards/pages/8_Player_Comparison.py"),
+        ("📋 Scouting Reports", "dashboards/pages/9_Scouting_Report.py"),
+        ("🔄 Transfer Recommendations", "dashboards/pages/4_🔄_Transfer_Recommendations.py"),
     ],
     "coach": [
-        ("🤖 AI Coach", "pages/3_🤖_AI_Coach.py"),
-        ("🤖 AI Chat", "pages/7_AI_Chat.py"),
-        ("🏟 Team Analytics", "pages/Team_Analytics.py"),
-        ("🏥 Injury Risk", "pages/5_🏥_Injury_Risk.py"),
+        ("🤖 AI Coach", "dashboards/pages/3_🤖_AI_Coach.py"),
+        ("🤖 AI Chat", "dashboards/pages/7_AI_Chat.py"),
+        ("🏟 Team Analytics", "dashboards/pages/Team_Analytics.py"),
+        ("🏥 Injury Risk", "dashboards/pages/5_🏥_Injury_Risk.py"),
     ],
     "analyst": [
-        ("📈 xG Analytics", "pages/2_📈_xG_Analytics.py"),
-        ("🏟 Team Analytics", "pages/Team_Analytics.py"),
-        ("📋 Scouting Reports", "pages/9_Scouting_Report.py"),
+        ("📈 xG Analytics", "dashboards/pages/2_📈_xG_Analytics.py"),
+        ("🏟 Team Analytics", "dashboards/pages/Team_Analytics.py"),
+        ("📋 Scouting Reports", "dashboards/pages/9_Scouting_Report.py"),
     ],
 }
 

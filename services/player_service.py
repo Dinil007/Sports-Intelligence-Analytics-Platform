@@ -10,7 +10,14 @@ Wraps database/player_repository.py and guarantees:
 """
 
 from __future__ import annotations
-from database.player_repository import fetch_player_profile
+from database.player_repository import (
+    fetch_player_profile,
+    fetch_filtered_player_names,
+    fetch_all_scouting_player_names,
+    fetch_all_competitions,
+    fetch_all_teams,
+    fetch_all_seasons,
+)
 
 
 # ---------------------------------------------------------------------------
@@ -64,6 +71,49 @@ def get_player_profile(player_name: str) -> dict:
     """
     raw = fetch_player_profile(player_name)
     return _clean(raw)
+
+
+def get_filtered_players(
+    position=None,
+    age_min=None,
+    age_max=None,
+    club=None,
+    competition=None,
+    season=None,
+):
+    try:
+        return fetch_filtered_player_names(
+            position=position,
+            age_min=age_min,
+            age_max=age_max,
+            club=club,
+            competition=competition,
+            season=season,
+        )
+    except Exception as e:
+        print(f"get_filtered_players failed: {e}")
+        return []
+
+
+def get_all_competitions() -> list[str]:
+    """
+    Return all available competition names for filter dropdown.
+    """
+    return fetch_all_competitions()
+
+
+def get_all_teams() -> list[str]:
+    """
+    Return all available team names for filter dropdown.
+    """
+    return fetch_all_teams()
+
+
+def get_all_seasons() -> list[str]:
+    """
+    Return all available season names for filter dropdown.
+    """
+    return fetch_all_seasons()
 
 
 # ---------------------------------------------------------------------------

@@ -9,6 +9,10 @@ if str(PROJECT_ROOT) not in sys.path:
 import streamlit as st
 import pandas as pd
 
+from auth.streamlit_auth import is_authenticated
+if not is_authenticated():
+    st.stop()
+
 from database.db_connection import engine
 from ai.response_generator import explain_results
 

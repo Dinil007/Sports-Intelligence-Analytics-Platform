@@ -31,7 +31,7 @@ def decode_session_token(token: str | None) -> dict | None:
 def get_stored_token(cookies) -> str | None:
     try:
         token = cookies.get(AUTH_COOKIE_KEY)
-    except Exception:
+    except Exception as exc:
         return None
     if token is None:
         return None

@@ -44,51 +44,42 @@ def is_authenticated() -> bool:
     return is_authenticated_session() and is_valid_role(st.session_state.get("role"))
 
 
-def invalidate_auth(cookies, *, clear_cache: bool = True, clear_all_session: bool = True) -> None:
+def invalidate_auth(cookies=None, *, clear_cache: bool = True, clear_all_session: bool = True) -> None:
     cleanup_error = None
-    try:
+    if cookies is not None:
         try:
             clear_auth_cookie(cookies)
         except Exception as exc:
             cleanup_error = exc
-        
-        if clear_cache:
-            try:
-                clear_auth_cache()
-            except Exception as exc:
-                if cleanup_error is None:
-                    cleanup_error = exc
-        
+    
+    if clear_cache:
         try:
-            clear_auth_session(clear_all=clear_all_session)
+            clear_auth_cache()
         except Exception as exc:
             if cleanup_error is None:
                 cleanup_error = exc
-    finally:
-        # Cookie deletion is the most important logout side effect. Try again
-        # even if Streamlit session cleanup failed midway.
-        try:
-            clear_auth_cookie(cookies)
-        except Exception as exc:
-            if cleanup_error is None:
-                cleanup_error = exc
+    
+    try:
+        clear_auth_session(clear_all=clear_all_session)
+    except Exception as exc:
+        if cleanup_error is None:
+            cleanup_error = exc
 
     if cleanup_error is not None:
         raise cleanup_error
 
 
-def ensure_authenticated(cookies) -> bool:
-    """Validate browser token and restore exactly the matching database user."""
+def ensure_authenticated(cookies=None) -> bool:
     init_anonymous_session()
+
+    # Local development: trust session state only
+    if cookies is None:
+        return is_authenticated()
+
     token = get_stored_token(cookies)
     if not token:
-        if is_authenticated():
-            invalidate_auth(cookies)
         return False
 
-    # If this Streamlit session is already backed by the same token, avoid
-    # clearing navigation state on every rerun/refresh. Token validation below
-    # still happens on cold starts and whenever the browser token changes.
     if is_authenticated() and st.session_state.get("auth_token") == token:
         return True
 
@@ -102,7 +93,7 @@ def ensure_authenticated(cookies) -> bool:
     return True
 
 
-def login_user(username, password, cookies) -> bool:
+def login_user(username: str, password: str, cookies=None) -> bool:
     user = authenticate_credentials(username, password)
     if not user:
         return False
@@ -116,20 +107,31 @@ def login_user(username, password, cookies) -> bool:
         session_id=session_id,
     )
     start_authenticated_session(user, token, session_id)
-    store_auth_token(cookies, token)
+    # Cookie storage is optional in local development
+    if cookies is not None:
+        try:
+            store_auth_token(cookies, token)
+        except Exception:
+            pass
     return True
 
 
-def logout_user(cookies):
+def logout_user(cookies=None):
     try:
         invalidate_auth(cookies, clear_all_session=True)
     except Exception:
         pass
     finally:
+        # Ensure cookie cleanup happens even if session cleanup raised
+        if cookies is not None:
+            try:
+                clear_auth_cookie(cookies)
+            except Exception:
+                pass
         st.rerun()
 
 
-def show_sidebar_user_profile(cookies):
+def show_sidebar_user_profile(cookies=None):
     """Render the current authenticated user only."""
     if not is_authenticated():
         return

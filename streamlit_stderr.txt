@@ -1,0 +1,123 @@
+2026-06-27 15:25:40.518 
+`st.cache` is deprecated and will be removed soon. Please use one of Streamlit's new
+caching commands, `st.cache_data` or `st.cache_resource`. More information
+[in our docs](https://docs.streamlit.io/develop/concepts/architecture/caching).
+
+**Note**: The behavior of `st.cache` was updated in Streamlit 1.36 to the new caching
+logic used by `st.cache_data` and `st.cache_resource`. This might lead to some problems
+or unexpected behavior in certain edge cases.
+
+2026-06-27 15:25:43.040 Uncaught app execution
+Traceback (most recent call last):
+  File "C:\Users\DINIL RAJ MR\AppData\Local\Programs\Python\Python312\Lib\site-packages\streamlit\runtime\scriptrunner\exec_code.py", line 121, in exec_func_with_error_handling
+    result = func()
+             ^^^^^^
+  File "C:\Users\DINIL RAJ MR\AppData\Local\Programs\Python\Python312\Lib\site-packages\streamlit\runtime\scriptrunner\script_runner.py", line 591, in code_to_exec
+    exec(code, module.__dict__)
+  File "D:\Sports Intelligence & Analytics Platform\dashboards\app.py", line 43, in <module>
+    st.set_page_config(
+  File "C:\Users\DINIL RAJ MR\AppData\Local\Programs\Python\Python312\Lib\site-packages\streamlit\runtime\metrics_util.py", line 410, in wrapped_func
+    result = non_optional_func(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\DINIL RAJ MR\AppData\Local\Programs\Python\Python312\Lib\site-packages\streamlit\commands\page_config.py", line 274, in set_page_config
+    ctx.enqueue(msg)
+  File "C:\Users\DINIL RAJ MR\AppData\Local\Programs\Python\Python312\Lib\site-packages\streamlit\runtime\scriptrunner_utils\script_run_context.py", line 179, in enqueue
+    raise StreamlitSetPageConfigMustBeFirstCommandError()
+streamlit.errors.StreamlitSetPageConfigMustBeFirstCommandError: `set_page_config()` can only be called once per app page, and must be called as the first Streamlit command in your script.
+
+For more information refer to the [docs](https://docs.streamlit.io/develop/api-reference/configuration/st.set_page_config).
+2026-06-27 15:25:43.041 Uncaught app execution
+Traceback (most recent call last):
+  File "C:\Users\DINIL RAJ MR\AppData\Local\Programs\Python\Python312\Lib\site-packages\streamlit\runtime\scriptrunner\exec_code.py", line 121, in exec_func_with_error_handling
+    result = func()
+             ^^^^^^
+  File "C:\Users\DINIL RAJ MR\AppData\Local\Programs\Python\Python312\Lib\site-packages\streamlit\runtime\scriptrunner\script_runner.py", line 591, in code_to_exec
+    exec(code, module.__dict__)
+  File "D:\Sports Intelligence & Analytics Platform\dashboards\app.py", line 43, in <module>
+    st.set_page_config(
+  File "C:\Users\DINIL RAJ MR\AppData\Local\Programs\Python\Python312\Lib\site-packages\streamlit\runtime\metrics_util.py", line 410, in wrapped_func
+    result = non_optional_func(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\DINIL RAJ MR\AppData\Local\Programs\Python\Python312\Lib\site-packages\streamlit\commands\page_config.py", line 274, in set_page_config
+    ctx.enqueue(msg)
+  File "C:\Users\DINIL RAJ MR\AppData\Local\Programs\Python\Python312\Lib\site-packages\streamlit\runtime\scriptrunner_utils\script_run_context.py", line 179, in enqueue
+    raise StreamlitSetPageConfigMustBeFirstCommandError()
+streamlit.errors.StreamlitSetPageConfigMustBeFirstCommandError: `set_page_config()` can only be called once per app page, and must be called as the first Streamlit command in your script.
+
+For more information refer to the [docs](https://docs.streamlit.io/develop/api-reference/configuration/st.set_page_config).
+2026-06-27 15:25:43.041 Uncaught app execution
+Traceback (most recent call last):
+  File "C:\Users\DINIL RAJ MR\AppData\Local\Programs\Python\Python312\Lib\site-packages\streamlit\runtime\scriptrunner\exec_code.py", line 121, in exec_func_with_error_handling
+    result = func()
+             ^^^^^^
+  File "C:\Users\DINIL RAJ MR\AppData\Local\Programs\Python\Python312\Lib\site-packages\streamlit\runtime\scriptrunner\script_runner.py", line 591, in code_to_exec
+    exec(code, module.__dict__)
+  File "D:\Sports Intelligence & Analytics Platform\dashboards\app.py", line 43, in <module>
+    st.set_page_config(
+  File "C:\Users\DINIL RAJ MR\AppData\Local\Programs\Python\Python312\Lib\site-packages\streamlit\runtime\metrics_util.py", line 410, in wrapped_func
+    result = non_optional_func(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\DINIL RAJ MR\AppData\Local\Programs\Python\Python312\Lib\site-packages\streamlit\commands\page_config.py", line 274, in set_page_config
+    ctx.enqueue(msg)
+  File "C:\Users\DINIL RAJ MR\AppData\Local\Programs\Python\Python312\Lib\site-packages\streamlit\runtime\scriptrunner_utils\script_run_context.py", line 179, in enqueue
+    raise StreamlitSetPageConfigMustBeFirstCommandError()
+streamlit.errors.StreamlitSetPageConfigMustBeFirstCommandError: `set_page_config()` can only be called once per app page, and must be called as the first Streamlit command in your script.
+
+For more information refer to the [docs](https://docs.streamlit.io/develop/api-reference/configuration/st.set_page_config).
+2026-06-27 15:25:44.341 Uncaught app execution
+Traceback (most recent call last):
+  File "C:\Users\DINIL RAJ MR\AppData\Local\Programs\Python\Python312\Lib\site-packages\streamlit\runtime\scriptrunner\exec_code.py", line 121, in exec_func_with_error_handling
+    result = func()
+             ^^^^^^
+  File "C:\Users\DINIL RAJ MR\AppData\Local\Programs\Python\Python312\Lib\site-packages\streamlit\runtime\scriptrunner\script_runner.py", line 591, in code_to_exec
+    exec(code, module.__dict__)
+  File "D:\Sports Intelligence & Analytics Platform\dashboards\app.py", line 43, in <module>
+    st.set_page_config(
+  File "C:\Users\DINIL RAJ MR\AppData\Local\Programs\Python\Python312\Lib\site-packages\streamlit\runtime\metrics_util.py", line 410, in wrapped_func
+    result = non_optional_func(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\DINIL RAJ MR\AppData\Local\Programs\Python\Python312\Lib\site-packages\streamlit\commands\page_config.py", line 274, in set_page_config
+    ctx.enqueue(msg)
+  File "C:\Users\DINIL RAJ MR\AppData\Local\Programs\Python\Python312\Lib\site-packages\streamlit\runtime\scriptrunner_utils\script_run_context.py", line 179, in enqueue
+    raise StreamlitSetPageConfigMustBeFirstCommandError()
+streamlit.errors.StreamlitSetPageConfigMustBeFirstCommandError: `set_page_config()` can only be called once per app page, and must be called as the first Streamlit command in your script.
+
+For more information refer to the [docs](https://docs.streamlit.io/develop/api-reference/configuration/st.set_page_config).
+2026-06-27 15:25:44.449 Uncaught app execution
+Traceback (most recent call last):
+  File "C:\Users\DINIL RAJ MR\AppData\Local\Programs\Python\Python312\Lib\site-packages\streamlit\runtime\scriptrunner\exec_code.py", line 121, in exec_func_with_error_handling
+    result = func()
+             ^^^^^^
+  File "C:\Users\DINIL RAJ MR\AppData\Local\Programs\Python\Python312\Lib\site-packages\streamlit\runtime\scriptrunner\script_runner.py", line 591, in code_to_exec
+    exec(code, module.__dict__)
+  File "D:\Sports Intelligence & Analytics Platform\dashboards\app.py", line 43, in <module>
+    st.set_page_config(
+  File "C:\Users\DINIL RAJ MR\AppData\Local\Programs\Python\Python312\Lib\site-packages\streamlit\runtime\metrics_util.py", line 410, in wrapped_func
+    result = non_optional_func(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\DINIL RAJ MR\AppData\Local\Programs\Python\Python312\Lib\site-packages\streamlit\commands\page_config.py", line 274, in set_page_config
+    ctx.enqueue(msg)
+  File "C:\Users\DINIL RAJ MR\AppData\Local\Programs\Python\Python312\Lib\site-packages\streamlit\runtime\scriptrunner_utils\script_run_context.py", line 179, in enqueue
+    raise StreamlitSetPageConfigMustBeFirstCommandError()
+streamlit.errors.StreamlitSetPageConfigMustBeFirstCommandError: `set_page_config()` can only be called once per app page, and must be called as the first Streamlit command in your script.
+
+For more information refer to the [docs](https://docs.streamlit.io/develop/api-reference/configuration/st.set_page_config).
+2026-06-27 15:25:44.450 Uncaught app execution
+Traceback (most recent call last):
+  File "C:\Users\DINIL RAJ MR\AppData\Local\Programs\Python\Python312\Lib\site-packages\streamlit\runtime\scriptrunner\exec_code.py", line 121, in exec_func_with_error_handling
+    result = func()
+             ^^^^^^
+  File "C:\Users\DINIL RAJ MR\AppData\Local\Programs\Python\Python312\Lib\site-packages\streamlit\runtime\scriptrunner\script_runner.py", line 591, in code_to_exec
+    exec(code, module.__dict__)
+  File "D:\Sports Intelligence & Analytics Platform\dashboards\app.py", line 43, in <module>
+    st.set_page_config(
+  File "C:\Users\DINIL RAJ MR\AppData\Local\Programs\Python\Python312\Lib\site-packages\streamlit\runtime\metrics_util.py", line 410, in wrapped_func
+    result = non_optional_func(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\DINIL RAJ MR\AppData\Local\Programs\Python\Python312\Lib\site-packages\streamlit\commands\page_config.py", line 274, in set_page_config
+    ctx.enqueue(msg)
+  File "C:\Users\DINIL RAJ MR\AppData\Local\Programs\Python\Python312\Lib\site-packages\streamlit\runtime\scriptrunner_utils\script_run_context.py", line 179, in enqueue
+    raise StreamlitSetPageConfigMustBeFirstCommandError()
+streamlit.errors.StreamlitSetPageConfigMustBeFirstCommandError: `set_page_config()` can only be called once per app page, and must be called as the first Streamlit command in your script.
+
+For more information refer to the [docs](https://docs.streamlit.io/develop/api-reference/configuration/st.set_page_config).

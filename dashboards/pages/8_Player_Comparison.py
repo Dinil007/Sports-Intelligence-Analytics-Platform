@@ -14,8 +14,21 @@ import pandas as pd
 import plotly.graph_objects as go
 from sqlalchemy import text
 
+# Auth guard: redirect unauthenticated users to login immediately
+from auth.streamlit_auth import is_authenticated
+
+if not is_authenticated():
+    st.stop()
+
 from database.db_connection import engine
-from services.player_service import get_player_profile, PROFILE_SCHEMA
+import services.player_service as ps
+
+get_player_profile = ps.get_player_profile
+PROFILE_SCHEMA = ps.PROFILE_SCHEMA
+get_filtered_players = ps.get_filtered_players
+get_all_competitions = ps.get_all_competitions
+get_all_teams = ps.get_all_teams
+get_all_seasons = ps.get_all_seasons
 from services.chart_service import (
     RADAR_BENCHMARKS,
     RADAR_PLAYER_COLORS,
@@ -360,18 +373,118 @@ def build_profile_card(profile: dict) -> str:
 
 st.title("⚽ SPORTA VISTA PRO – Player Comparison")
 
-with st.spinner("Loading player list..."):
-    players = load_player_names()
+# ---------------------------------------------------------------------------
+# Advanced Filters
+# ---------------------------------------------------------------------------
+st.markdown("### 🔍 Filter Players")
 
+# Load filter options (cached)
+@st.cache_data(ttl=600, show_spinner=False)
+def load_filter_options():
+    """Load all filter options from database."""
+    competitions = get_all_competitions()
+    teams = get_all_teams()
+    seasons = get_all_seasons()
+    return competitions, teams, seasons
+
+with st.spinner("Loading filter options..."):
+    competitions, teams, seasons = load_filter_options()
+
+# Create filter columns
+filter_col1, filter_col2, filter_col3, filter_col4 = st.columns(4)
+
+with filter_col1:
+    # Competition filter
+    competition_filter = st.selectbox(
+        "🏆 Competition",
+        options=["All Competitions"] + competitions,
+        index=0,
+        help="Filter players by competition",
+        key="competition_filter"
+    )
+
+with filter_col2:
+    # Team/Club filter
+    team_filter = st.selectbox(
+        "⚽ Club/Team",
+        options=["All Teams"] + teams,
+        index=0,
+        help="Filter players by team",
+        key="team_filter"
+    )
+
+with filter_col3:
+    # Season filter
+    season_filter = st.selectbox(
+        "📅 Season",
+        options=["All Seasons"] + seasons,
+        index=0,
+        help="Filter players by season",
+        key="season_filter"
+    )
+
+with filter_col4:
+    # Reset filters button
+    st.write("")  # Spacing
+    st.write("")  # Spacing
+    if st.button("🔄 Reset Filters", use_container_width=True):
+        st.rerun()
+
+# Apply filters to get player list
+@st.cache_data(ttl=300, show_spinner=False)
+def load_filtered_players(
+    competition: str | None,
+    club: str | None,
+    season: str | None,
+) -> list[str]:
+    """Load players filtered by competition, club, and/or season."""
+    if competition or club or season:
+        return get_filtered_players(
+            competition=competition,
+            club=club,
+            season=season,
+        )
+    else:
+        # No filters applied, return all players
+        return load_player_names()
+
+# Get filtered player list
+comp_value = None if competition_filter == "All Competitions" else competition_filter
+club_value = None if team_filter == "All Teams" else team_filter
+season_value = None if season_filter == "All Seasons" else season_filter
+
+with st.spinner("Applying filters..."):
+    players = load_filtered_players(comp_value, club_value, season_value)
+
+# Show filter results
 if len(players) < 2:
-    st.error("Not enough qualified players found. At least 3 matches required.")
+    st.warning(
+        f"⚠️ Not enough players found with current filters "
+        f"({len(players)} players). Please adjust your filters."
+    )
     st.stop()
 
+st.info(f"✅ Found {len(players)} players matching your filters")
+
+# Player selection
 col1, col2 = st.columns(2)
 with col1:
-    player1 = st.selectbox("Select Player 1", players, key="p1")
+    player1 = st.selectbox(
+        "Select Player 1",
+        players,
+        key="p1",
+        help="Select first player for comparison"
+    )
 with col2:
-    player2 = st.selectbox("Select Player 2", players, index=1, key="p2")
+    # Ensure player2 is different from player1
+    default_idx = 1 if len(players) > 1 else 0
+    player2 = st.selectbox(
+        "Select Player 2",
+        players,
+        index=default_idx,
+        key="p2",
+        help="Select second player for comparison"
+    )
 
 if st.button("🔍 Compare Players", type="primary", use_container_width=True):
 
@@ -1437,7 +1550,6 @@ if st.button("🔍 Compare Players", type="primary", use_container_width=True):
         )
 
     # PDF Export
-    # PDF Export
     with ex2:
         pdf_data = export_comparison_pdf(profile1, profile2, player1_stats, player2_stats)
         if pdf_data:
@@ -1449,7 +1561,13 @@ if st.button("🔍 Compare Players", type="primary", use_container_width=True):
                 use_container_width=True,
             )
         else:
-            st.info("PDF export unavailable (ReportLab not installed).")
+            st.warning(
+                "⚠️ **PDF export unavailable**\n\n"
+                "ReportLab is not installed. To enable PDF export:\n\n"
+                "1. Activate your virtual environment (if using one)\n"
+                "2. Run: `pip install reportlab`\n\n"
+                "CSV and AI report exports remain available."
+            )
 
 
     # AI Report Export

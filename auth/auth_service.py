@@ -45,7 +45,8 @@ def authenticate_credentials(username: str, password: str) -> AuthenticatedUser 
         user = db.query(User).filter(User.username == clean_username).first()
         if not user or not verify_password(str(password), user.password_hash):
             return None
-        return _to_authenticated_user(user)
+        auth_user = _to_authenticated_user(user)
+        return auth_user
     finally:
         db.close()
 
@@ -83,7 +84,9 @@ def validate_token(token: str | None) -> tuple[AuthenticatedUser, dict] | None:
     except (TypeError, ValueError):
         return None
 
-    if not user_id_matches or token_role != user.role:
+    if not user_id_matches:
+        return None
+    if token_role != user.role:
         return None
 
     return user, payload

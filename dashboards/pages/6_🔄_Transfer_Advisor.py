@@ -7,6 +7,10 @@ from dotenv import load_dotenv
 from pathlib import Path
 import os
 
+from auth.streamlit_auth import is_authenticated
+if not is_authenticated():
+    st.stop()
+
 # Load environment variables
 load_dotenv(Path(__file__).resolve().parent.parent.parent / ".env")
 

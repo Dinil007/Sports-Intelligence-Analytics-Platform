@@ -1,0 +1,15 @@
+2026-06-27 15:27:24.897 Uncaught app execution
+Traceback (most recent call last):
+  File "C:\Users\DINIL RAJ MR\AppData\Local\Programs\Python\Python312\Lib\site-packages\streamlit\runtime\scriptrunner\exec_code.py", line 121, in exec_func_with_error_handling
+    result = func()
+             ^^^^^^
+  File "C:\Users\DINIL RAJ MR\AppData\Local\Programs\Python\Python312\Lib\site-packages\streamlit\runtime\scriptrunner\script_runner.py", line 591, in code_to_exec
+    exec(code, module.__dict__)
+  File "D:\Sports Intelligence & Analytics Platform\dashboards\pages\4_\U0001f504_Transfer_Recommendations.py", line 14, in <module>
+    st.switch_page("dashboards/app.py")
+  File "C:\Users\DINIL RAJ MR\AppData\Local\Programs\Python\Python312\Lib\site-packages\streamlit\runtime\metrics_util.py", line 410, in wrapped_func
+    result = non_optional_func(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\DINIL RAJ MR\AppData\Local\Programs\Python\Python312\Lib\site-packages\streamlit\commands\execution_control.py", line 221, in switch_page
+    raise StreamlitAPIException(
+streamlit.errors.StreamlitAPIException: Could not find page: `dashboards/app.py`. Must be the file path relative to the main script, from the directory: `pages`. Only the main app file and files in the `pages/` directory are supported.

@@ -1,0 +1,38 @@
+Nested Loop Left Join  (cost=14217.38..61049466.72 rows=6590 width=211)
+  ->  Merge Left Join  (cost=4937.33..5094.99 rows=6590 width=147)
+        Merge Cond: (s.player_name = (dp.player_name)::text)
+        ->  Sort  (cost=3905.13..3921.58 rows=6582 width=139)
+              Sort Key: s.player_name
+              ->  Subquery Scan on s  (cost=3405.41..3487.68 rows=6582 width=139)
+                    ->  Sort  (cost=3405.41..3421.86 rows=6582 width=147)
+                          Sort Key: vw_sporta_score.sporta_score DESC
+                          ->  Subquery Scan on vw_sporta_score  (cost=1656.85..2987.97 rows=6582 width=147)
+                                ->  Hash Left Join  (cost=1656.85..2922.15 rows=6582 width=155)
+                                      Hash Cond: (b.player_name = (g.player_name)::text)
+                                      ->  Seq Scan on mv_player_base_stats b  (cost=0.00..277.16 rows=6582 width=75)
+                                            Filter: (matches_played >= 3)
+                                      ->  Hash  (cost=1633.23..1633.23 rows=1890 width=58)
+                                            ->  Subquery Scan on g  (cost=1609.60..1633.23 rows=1890 width=58)
+                                                  ->  Sort  (cost=1609.60..1614.33 rows=1890 width=58)
+                                                        Sort Key: (count(*)) DESC
+                                                        ->  HashAggregate  (cost=1478.40..1506.75 rows=1890 width=58)
+                                                              Group Key: fact_shots.player_name
+                                                              ->  Seq Scan on fact_shots  (cost=0.00..1453.51 rows=3318 width=26)
+                                                                    Filter: ((shot_outcome)::text = 'Goal'::text)
+        ->  Sort  (cost=1031.62..1061.34 rows=11889 width=27)
+              Sort Key: dp.player_name
+              ->  Seq Scan on dim_players dp  (cost=0.00..226.89 rows=11889 width=27)
+  ->  Memoize  (cost=9280.05..9280.06 rows=1 width=12)
+        Cache Key: s.player_name
+        Cache Mode: binary
+        ->  Subquery Scan on te  (cost=9280.04..9280.05 rows=1 width=12)
+              ->  Limit  (cost=9280.04..9280.04 rows=1 width=20)
+                    ->  Sort  (cost=9280.04..9280.92 rows=351 width=20)
+                          Sort Key: (count(*)) DESC
+                          ->  HashAggregate  (cost=9274.78..9278.29 rows=351 width=20)
+                                Group Key: fme.team_name
+                                ->  Bitmap Heap Scan on fact_match_events fme  (cost=31.52..9262.47 rows=2462 width=12)
+                                      Recheck Cond: (player_name = s.player_name)
+                                      Filter: (team_name IS NOT NULL)
+                                      ->  Bitmap Index Scan on idx_fact_match_events_player_name  (cost=0.00..30.90 rows=2462 width=0)
+                                            Index Cond: (player_name = s.player_name)

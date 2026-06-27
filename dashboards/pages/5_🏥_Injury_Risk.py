@@ -10,6 +10,10 @@ import streamlit as st
 import joblib
 import pandas as pd
 
+from auth.streamlit_auth import is_authenticated
+if not is_authenticated():
+    st.stop()
+
 # Page Config handled by central entry point app.py
 
 st.title("🏥 Injury Risk Prediction")

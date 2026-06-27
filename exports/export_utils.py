@@ -1,6 +1,10 @@
 import pandas as pd
 import io
+import logging
 from datetime import datetime
+
+# Configure logger
+logger = logging.getLogger(__name__)
 
 try:
     from reportlab.lib.pagesizes import letter
@@ -11,8 +15,10 @@ try:
     from reportlab.lib.enums import TA_CENTER, TA_RIGHT, TA_LEFT
     from reportlab.lib.colors import black, white, HexColor
     REPORTLAB_AVAILABLE = True
+    logger.info("✅ ReportLab detected successfully - PDF export enabled")
 except ImportError:
     REPORTLAB_AVAILABLE = False
+    logger.warning("⚠️  ReportLab not installed - PDF export disabled (CSV and AI exports still available)")
 
 # Assuming RADAR_BENCHMARKS is needed for some formatting within PDF, if not, can be removed
 # This import will only be used if REPORTLAB_AVAILABLE is True and within the export_comparison_pdf function

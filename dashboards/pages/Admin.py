@@ -4,9 +4,15 @@ from pathlib import Path
 # Add project root to Python path
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 if str(PROJECT_ROOT) not in sys.path:
-    sys.path.insert(0, str(PROJECT_ROOT))
+    sys.path.append(str(PROJECT_ROOT))
 
 import streamlit as st
+
+# Auth guard - Admin page requires authentication
+from auth.streamlit_auth import is_authenticated
+from auth.auth_guard import is_valid_role
+if not is_authenticated():
+    st.stop()
 import pandas as pd
 from database.db_connection import engine, SessionLocal
 from auth.models import User

@@ -38,6 +38,9 @@ engine = create_engine(
     pool_pre_ping=True,
     pool_recycle=3600,
     echo=False,  # Set to True if you want SQL queries printed
+    pool_size=10,
+    max_overflow=20,
+    pool_timeout=30,
 )
 
 # --------------------------------------------------

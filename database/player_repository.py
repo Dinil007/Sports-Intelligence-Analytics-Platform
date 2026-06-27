@@ -143,3 +143,130 @@ def fetch_all_scouting_player_names() -> list[str]:
             text("SELECT DISTINCT player_name FROM vw_scouting ORDER BY player_name;")
         ).fetchall()
     return [r[0] for r in rows]
+
+
+def fetch_filtered_player_names(
+    competition: str | None = None,
+    club: str | None = None,
+    season: str | None = None,
+    position: str | None = None,
+    age_min: int | None = None,
+    age_max: int | None = None,
+) -> list[str]:
+    """
+    Return player names filtered by any combination of the supported filters.
+
+    Only filters that are not None are applied; None filters are ignored so
+    the function never fails simply because a filter was omitted.
+
+    Parameters:
+    -----------
+    competition : str, optional
+        Competition name to filter by (e.g., "Premier League").
+    club : str, optional
+        Club / team name to filter by (e.g., "Manchester City").
+    season : str, optional
+        Season name to filter by (e.g., "2015/2016"). Matched against
+        ``dim_seasons.season_name`` via ``fact_matches.season_id``.
+    position : str, optional
+        Player position to filter by. **Note:** position data is NOT present
+        in the StatsBomb dataset, so this filter is accepted for API
+        forward-compatibility but currently has no effect.
+    age_min : int, optional
+        Minimum player age to filter by. **Note:** age data is NOT present
+        in the StatsBomb dataset, so this filter is accepted for API
+        forward-compatibility but currently has no effect.
+    age_max : int, optional
+        Maximum player age to filter by. **Note:** age data is NOT present
+        in the StatsBomb dataset, so this filter is accepted for API
+        forward-compatibility but currently has no effect.
+
+    Returns:
+    --------
+    list[str]
+        Filtered list of player names from ``vw_scouting``.
+    """
+    # Build dynamic query with optional filters.
+    # Joins:
+    #   vw_scouting -> fact_match_events (player_name)
+    #   fact_match_events -> fact_matches (match_id)
+    #   fact_matches -> dim_competitions (competition_id)
+    #   fact_matches -> dim_seasons (season_id)
+    query = """
+        SELECT DISTINCT s.player_name
+        FROM vw_scouting s
+        INNER JOIN fact_match_events fme ON s.player_name = fme.player_name
+        INNER JOIN fact_matches fm ON fme.match_id = fm.match_id
+        INNER JOIN dim_competitions dc ON fm.competition_id = dc.competition_id
+        INNER JOIN dim_seasons ds ON fm.season_id = ds.season_id
+    """
+
+    conditions = []
+    params: dict = {}
+
+    if competition:
+        conditions.append("dc.competition_name = :competition")
+        params["competition"] = competition
+
+    if club:
+        conditions.append("fme.team_name = :club")
+        params["club"] = club
+
+    if season:
+        conditions.append("ds.season_name = :season")
+        params["season"] = season
+
+    # position / age: accepted for API compatibility but not yet backed by
+    # database columns. When the data becomes available, add the relevant
+    # conditions here (e.g. on dim_players.position / dim_players.age).
+    # They are intentionally NOT applied today so callers can pass them
+    # without causing failures.
+    if position:
+        pass
+    if age_min is not None or age_max is not None:
+        pass
+
+    if conditions:
+        query += " WHERE " + " AND ".join(conditions)
+
+    query += " ORDER BY s.player_name;"
+
+    with engine.connect() as conn:
+        rows = conn.execute(text(query), params).fetchall()
+    return [r[0] for r in rows]
+
+
+def fetch_all_competitions() -> list[str]:
+    """
+    Return all competition names from dim_competitions.
+    Used to populate the competition filter dropdown.
+    """
+    with engine.connect() as conn:
+        rows = conn.execute(
+            text("SELECT DISTINCT competition_name FROM dim_competitions ORDER BY competition_name;")
+        ).fetchall()
+    return [r[0] for r in rows]
+
+
+def fetch_all_teams() -> list[str]:
+    """
+    Return all team names from dim_teams.
+    Used to populate the team filter dropdown.
+    """
+    with engine.connect() as conn:
+        rows = conn.execute(
+            text("SELECT DISTINCT team_name FROM dim_teams ORDER BY team_name;")
+        ).fetchall()
+    return [r[0] for r in rows]
+
+
+def fetch_all_seasons() -> list[str]:
+    """
+    Return all season names from dim_seasons.
+    Used to populate the season filter dropdown.
+    """
+    with engine.connect() as conn:
+        rows = conn.execute(
+            text("SELECT DISTINCT season_name FROM dim_seasons ORDER BY season_name;")
+        ).fetchall()
+    return [r[0] for r in rows]

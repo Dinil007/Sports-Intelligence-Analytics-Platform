@@ -1,112 +1,123 @@
-import streamlit as st
-import pandas as pd
-from sqlalchemy import text
-from pathlib import Path
 import sys
+from pathlib import Path
 
-# Add project root to Python path
+# Ensure project root is importable when running as a Streamlit page.
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.append(str(PROJECT_ROOT))
 
-from database.db_connection import engine
+import streamlit as st
 
-# Page Config handled by central entry point app.py
+from auth.streamlit_auth import is_authenticated
 
-st.title("🔄 Transfer Recommendation Engine")
-st.markdown("Find players with high SPORTA Scores and strong attacking output.")
+if not is_authenticated():
+    st.stop()
 
-# ---------------------------------------------------------------------------
-# Tier helper
-# ---------------------------------------------------------------------------
-def sporta_tier(score: float) -> tuple[str, str]:
-    if score >= 90:
-        return "Elite", "#10B981"
-    elif score >= 80:
-        return "Excellent", "#3B82F6"
-    elif score >= 70:
-        return "Good", "#F59E0B"
-    elif score >= 60:
-        return "Average", "#8B5CF6"
-    else:
-        return "Needs Improvement", "#EF4444"
+from services.recommendation_service import recommend_similar_players
+from database.recommendation_repository import (
+    fetch_candidate_player_names,
+    fetch_candidate_teams,
+    fetch_candidate_competitions,
+    fetch_candidate_seasons,
+)
+from dashboards.components.recommendation_card import render_recommendation_card
 
+st.title("🔄 AI Transfer Recommendations")
 
-# ---------------------------------------------------------------------------
-# Filters
-# ---------------------------------------------------------------------------
-col1, col2 = st.columns(2)
+# Lightweight pre-cached lookups for filter population.
+player_names = fetch_candidate_player_names()
+teams = fetch_candidate_teams()
+competitions = fetch_candidate_competitions()
+seasons = fetch_candidate_seasons()
 
-with col1:
-    min_sporta = st.slider(
-        "Minimum SPORTA Score",
-        min_value=40,
-        max_value=100,
-        value=70,
-        step=1,
-        help="Normalized 0–100. Elite ≥ 90 · Excellent ≥ 80 · Good ≥ 70"
+with st.container():
+    st.header("Refine Recommendations")
+
+    selected_player = st.selectbox(
+        "Choose a player",
+        player_names,
+        key="player_select",
     )
 
-with col2:
-    min_goals = st.slider(
-        "Minimum Goals",
+    club = st.selectbox(
+        "🏟️ Club",
+        [""] + teams,
+        key="club_filter",
+    ) or None
+
+    competition = st.selectbox(
+        "🏆 Competition",
+        [""] + competitions,
+        key="competition_filter",
+    ) or None
+
+    season = st.selectbox(
+        "📅 Season",
+        [""] + seasons,
+        key="season_filter",
+    ) or None
+
+    # Accepted but not yet enforced by the dataset (forward-compatible placeholders).
+    position = st.selectbox(
+        "📍 Position",
+        ["", "Goalkeeper", "Defender", "Midfielder", "Forward"],
+        key="position_filter",
+    ) or None
+
+    age_min, age_max = st.select_slider(
+        "🎂 Age Range",
+        options=list(range(16, 46)),
+        value=(16, 45),
+        key="age_filter",
+    )
+    # Convert to None when the full range is selected so the filter is effectively disabled.
+    age_min = None if age_min == 16 else age_min
+    age_max = None if age_max == 45 else age_max
+
+    budget_tier = st.selectbox(
+        "💰 Budget Tier",
+        ["", "Low", "Medium", "High", "Elite"],
+        key="budget_filter",
+    ) or None
+
+    preferred_foot = st.selectbox(
+        "⚽ Preferred Foot",
+        ["", "Left", "Right", "Both"],
+        key="foot_filter",
+    ) or None
+
+    minutes_played_min = st.number_input(
+        "⏱️ Minutes Played (min)",
         min_value=0,
-        max_value=50,
-        value=3,
-        step=1,
+        value=0,
+        step=90,
+        key="min_minutes_filter",
+    )
+    minutes_played_min = minutes_played_min if minutes_played_min > 0 else None
+
+if st.button("Find Similar Players", use_container_width=True):
+    recommendations = recommend_similar_players(
+        selected_player,
+        position=position,
+        age_min=age_min,
+        age_max=age_max,
+        nationality=None,
+        club=club,
+        competition=competition,
+        season=season,
+        budget_tier=budget_tier,
+        preferred_foot=preferred_foot,
+        minutes_played_min=minutes_played_min,
     )
 
-# ---------------------------------------------------------------------------
-# Query
-# ---------------------------------------------------------------------------
-query = text("""
-SELECT
-    player_name,
-    matches_played,
-    ROUND(sporta_score::numeric, 2) AS sporta_score,
-    goals,
-    ROUND(total_xg::numeric, 2)    AS total_xg,
-    shots,
-    passes,
-    carries,
-    dribbles,
-    recoveries
-FROM vw_scouting
-WHERE sporta_score >= :min_sporta
-  AND goals        >= :min_goals
-ORDER BY sporta_score DESC, goals DESC
-LIMIT 100;
-""")
+    if not recommendations:
+        st.info("No recommendations available for the selected player with the current filters.")
+    else:
+        st.subheader("Recommended Players")
+        # Inject badge CSS once before rendering cards
+        # st.markdown(get_card_css(), unsafe_allow_html=True)
 
-df = pd.read_sql(
-    query,
-    engine,
-    params={"min_sporta": min_sporta, "min_goals": min_goals},
-)
+        for rec in recommendations:
+            render_recommendation_card(rec)
 
-# ---------------------------------------------------------------------------
-# Results
-# ---------------------------------------------------------------------------
-st.subheader("🎯 Recommended Players")
 
-if df.empty:
-    st.info("No players match the current filters. Try lowering the sliders.")
-else:
-    df.insert(2, "Tier", df["sporta_score"].apply(lambda s: sporta_tier(s)[0]))
-    st.markdown(f"**{len(df)} players** found.")
-    st.dataframe(df, use_container_width=True, hide_index=True)
-
-    # ---------------------------------------------------------------------------
-    # Chart — SPORTA Score bar chart (capped at 30 players for readability)
-    # ---------------------------------------------------------------------------
-    st.subheader("📊 SPORTA Score Comparison")
-    chart_df = (
-        df.head(30)[["player_name", "sporta_score"]]
-        .set_index("player_name")
-    )
-    st.bar_chart(chart_df)
-
-st.info(
-    f"Showing players with SPORTA Score ≥ {min_sporta} "
-    f"and Goals ≥ {min_goals}."
-)
