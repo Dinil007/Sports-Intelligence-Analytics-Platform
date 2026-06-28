@@ -21,6 +21,7 @@ from database.recommendation_repository import (
     fetch_candidate_seasons,
 )
 from dashboards.components.recommendation_card import render_recommendation_card
+from dashboards.components.recommendation_summary import render_recommendation_summary
 
 st.title("🔄 AI Transfer Recommendations")
 
@@ -30,6 +31,16 @@ teams = fetch_candidate_teams()
 competitions = fetch_candidate_competitions()
 seasons = fetch_candidate_seasons()
 
+
+# Initialize session state for recommendations persistence across reruns.
+if "recommendations" not in st.session_state:
+    st.session_state.recommendations = None
+
+if "selected_player_name" not in st.session_state:
+    st.session_state.selected_player_name = None
+
+if "has_searched" not in st.session_state:
+    st.session_state.has_searched = False
 with st.container():
     st.header("Refine Recommendations")
 
@@ -96,7 +107,7 @@ with st.container():
     minutes_played_min = minutes_played_min if minutes_played_min > 0 else None
 
 if st.button("Find Similar Players", use_container_width=True):
-    recommendations = recommend_similar_players(
+    st.session_state.recommendations = recommend_similar_players(
         selected_player,
         position=position,
         age_min=age_min,
@@ -110,14 +121,22 @@ if st.button("Find Similar Players", use_container_width=True):
         minutes_played_min=minutes_played_min,
     )
 
-    if not recommendations:
-        st.info("No recommendations available for the selected player with the current filters.")
+    st.session_state.selected_player_name = selected_player
+    st.session_state.has_searched = True
+
+if st.session_state.has_searched:
+    if not st.session_state.recommendations:
+        st.info("No recommendations available.")
     else:
+        render_recommendation_summary(
+            st.session_state.recommendations,
+            st.session_state.selected_player_name,
+        )
         st.subheader("Recommended Players")
         # Inject badge CSS once before rendering cards
         # st.markdown(get_card_css(), unsafe_allow_html=True)
 
-        for rec in recommendations:
+        for rec in st.session_state.recommendations:
             render_recommendation_card(rec)
 
 

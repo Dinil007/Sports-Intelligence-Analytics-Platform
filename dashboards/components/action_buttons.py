@@ -21,7 +21,6 @@ def render_action_buttons(player_name: str) -> None:
     buttons = [
         "Compare Player",
         "View Profile",
-        "AI Scout Report",
         "Export PDF",
     ]
 
