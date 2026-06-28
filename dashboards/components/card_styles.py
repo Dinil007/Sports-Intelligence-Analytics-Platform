@@ -41,6 +41,12 @@ SPORTA_CARD_CSS = """
     color: #86efac;
     border: 1px solid rgba(34, 197, 94, 0.4);
 }
+.badge-center {
+    text-align: center;
+    margin-top: 4px;
+    margin-bottom: 4px;
+}
+
 </style>
 """
 

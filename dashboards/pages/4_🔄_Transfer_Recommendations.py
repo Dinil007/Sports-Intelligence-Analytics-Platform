@@ -13,14 +13,21 @@ from auth.streamlit_auth import is_authenticated
 if not is_authenticated():
     st.stop()
 
-from services.recommendation_service import recommend_similar_players
-from database.recommendation_repository import (
+from services.recommendation_service import (
+    recommend_similar_players,
+    get_selected_player,
     fetch_candidate_player_names,
     fetch_candidate_teams,
     fetch_candidate_competitions,
     fetch_candidate_seasons,
 )
 from dashboards.components.recommendation_card import render_recommendation_card
+from dashboards.components.recommendation_categories import (
+    render_recommendation_categories,
+)
+from dashboards.components.recommendation_comparison import (
+    render_recommendation_comparison,
+)
 from dashboards.components.recommendation_summary import render_recommendation_summary
 
 st.title("🔄 AI Transfer Recommendations")
@@ -41,6 +48,10 @@ if "selected_player_name" not in st.session_state:
 
 if "has_searched" not in st.session_state:
     st.session_state.has_searched = False
+
+if "compare_player" not in st.session_state:
+    st.session_state.compare_player = None
+
 with st.container():
     st.header("Refine Recommendations")
 
@@ -123,6 +134,7 @@ if st.button("Find Similar Players", use_container_width=True):
 
     st.session_state.selected_player_name = selected_player
     st.session_state.has_searched = True
+    st.session_state.pop("compare_player", None)
 
 if st.session_state.has_searched:
     if not st.session_state.recommendations:
@@ -136,7 +148,29 @@ if st.session_state.has_searched:
         # Inject badge CSS once before rendering cards
         # st.markdown(get_card_css(), unsafe_allow_html=True)
 
+        selected_player_dict = get_selected_player(st.session_state.selected_player_name)
+        player_options = {
+            r.get("player_name", "Unknown"): r
+            for r in st.session_state.recommendations
+        }
+
+        compare_player = st.session_state.get("compare_player")
+        compare_with = st.selectbox(
+            "Compare with...",
+            [""] + list(player_options.keys()),
+            index=list(player_options.keys()).index(compare_player) + 1
+            if compare_player and compare_player in player_options
+            else 0,
+        )
+        st.session_state["compare_player"] = compare_with if compare_with else compare_player
+
         for rec in st.session_state.recommendations:
             render_recommendation_card(rec)
+            compare_player = st.session_state.get("compare_player")
+            if compare_player and compare_player in player_options:
+                render_recommendation_comparison(
+                    selected_player_dict or {},
+                    player_options[compare_player],
+                )
 
 

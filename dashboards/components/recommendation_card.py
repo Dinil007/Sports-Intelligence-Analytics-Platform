@@ -16,6 +16,15 @@ from dashboards.components.player_badges import render_badges
 from dashboards.components.similarity_bar import render_similarity_bar
 from services.scout_report_service import generate_scout_report
 
+def _recommendation_badge(score: float) -> tuple[str, str]:
+    """Return a human-readable recommendation label and matching CSS class."""
+    if score >= 95:
+        return "Elite Recommendation", "elite"
+    if score >= 85:
+        return "Strong Recommendation", "high"
+    if score >= 70:
+        return "Good Recommendation", "medium"
+    return "Consider", "low"
 
 def render_recommendation_card(player: dict[str, Any]) -> None:
     """
@@ -35,7 +44,7 @@ def render_recommendation_card(player: dict[str, Any]) -> None:
     # ── Card container ──────────────────────────────────────────────
     with st.container():
         # Header row
-        col1, col2 = st.columns([3, 1])
+        col1, col2, col3 = st.columns([3, 1, 1])
         with col1:
             st.markdown(f"### {name}")
         with col2:
@@ -45,6 +54,15 @@ def render_recommendation_card(player: dict[str, Any]) -> None:
                 f"<span class='sporta-badge {tier.lower()}'>{tier}</span>",
                 unsafe_allow_html=True,
             )
+        with col3:
+            rec_score = player.get("recommendation_score")
+            if rec_score is not None:
+                rec_score = float(rec_score)
+                label, css_class = _recommendation_badge(rec_score)
+                st.markdown(
+                    f"<span class='sporta-badge {css_class}'>{label}</span>",
+                    unsafe_allow_html=True,
+                )
 
         # Meta line (club · nationality · position · age)
         meta_parts = [
@@ -64,6 +82,18 @@ def render_recommendation_card(player: dict[str, Any]) -> None:
         render_badges(player)
 
         st.divider()
+
+        # ── Recommendation Score ───────────────────────────────────
+        rec_score = player.get("recommendation_score")
+        if rec_score is not None:
+            rec_score = float(rec_score)
+            st.markdown(f"**🏆 Recommendation {rec_score:.1f}**")
+            label, css_class = _recommendation_badge(rec_score)
+            st.markdown(
+                f"<div class='badge-center'><span class='sporta-badge {css_class}'>{label}</span></div>",
+                unsafe_allow_html=True,
+            )
+            st.divider()
 
         # ── Primary KPIs ────────────────────────────────────────────
         st.markdown("**Primary KPIs**")

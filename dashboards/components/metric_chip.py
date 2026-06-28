@@ -51,8 +51,11 @@ def render_metrics(metrics: dict[str, object], num_columns: int = 6) -> None:
     if not metrics:
         return
 
+    # Explicit snapshot: render ONLY the keys actually supplied.
+    # Never inject additional metrics or fallback defaults.
+    metrics_snapshot = dict(metrics)
     cols = st.columns(num_columns)
-    items = list(metrics.items())
+    items = list(metrics_snapshot.items())
 
     for i, (key, value) in enumerate(items):
         if i >= num_columns:

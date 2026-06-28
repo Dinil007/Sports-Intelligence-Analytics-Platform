@@ -16,7 +16,15 @@ import numpy as np
 from typing import Any
 
 from database.db_connection import engine
-from database.recommendation_repository import get_candidate_players, get_player, get_player_vector
+from database.recommendation_repository import (
+    get_candidate_players,
+    get_player,
+    get_player_vector,
+    fetch_candidate_player_names as _repo_fetch_player_names,
+    fetch_candidate_teams as _repo_fetch_teams,
+    fetch_candidate_competitions as _repo_fetch_competitions,
+    fetch_candidate_seasons as _repo_fetch_seasons,
+)
 from ml.recommendation_engine import (
     FEATURE_COLUMNS,
     calculate_similarity,
@@ -211,3 +219,26 @@ def _badge_color(tier: str) -> str:
         "Low": "#10b981",
     }
     return mapping.get(tier, "#64748b")
+
+
+def get_selected_player(player_name: str) -> dict | None:
+    return get_player(player_name)
+
+
+def fetch_candidate_player_names() -> list[str]:
+    return _repo_fetch_player_names()
+
+
+def fetch_candidate_teams() -> list[str]:
+    return _repo_fetch_teams()
+
+
+def fetch_candidate_competitions() -> list[str]:
+    return _repo_fetch_competitions()
+
+
+def fetch_candidate_seasons() -> list[str]:
+    return _repo_fetch_seasons()
+
+
+

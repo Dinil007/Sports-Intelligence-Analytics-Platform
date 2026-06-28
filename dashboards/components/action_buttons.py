@@ -28,8 +28,10 @@ def render_action_buttons(player_name: str) -> None:
     for i, label in enumerate(buttons):
         action_key = f"{label.lower().replace(' ', '_')}_{safe_key}"
         with cols[i]:
-            st.button(
+            if st.button(
                 label,
                 key=action_key,
                 use_container_width=True,
-            )
+            ):
+                if label == "Compare Player":
+                    st.session_state["compare_player"] = player_name
