@@ -19,8 +19,6 @@ from typing import Any
 
 import streamlit as st
 
-from dashboards.components.recommendation_card import render_recommendation_card
-
 
 BUDGET_TIER_ORDER = ["Low", "Medium", "High", "Elite"]
 
@@ -168,4 +166,3 @@ def render_recommendation_categories(recommendations: list[dict[str, Any]]) -> N
         pool.remove(player)
 
         st.subheader(display_name)
-        render_recommendation_card(player)

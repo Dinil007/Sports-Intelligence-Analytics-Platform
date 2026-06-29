@@ -158,8 +158,8 @@ if st.session_state.has_searched:
 
         selected_player_dict = get_selected_player(st.session_state.selected_player_name)
         player_options = {
-            r.get("player_name", "Unknown"): r
-            for r in st.session_state.recommendations
+            r.get("player_name", "Unknown"): (index, r)
+            for index, r in enumerate(st.session_state.recommendations)
         }
 
         compare_player = st.session_state.get("compare_player")
@@ -172,13 +172,18 @@ if st.session_state.has_searched:
         )
         st.session_state["compare_player"] = compare_with if compare_with else compare_player
 
-        for rec in st.session_state.recommendations:
-            render_recommendation_card(rec)
-            compare_player = st.session_state.get("compare_player")
-            if compare_player and compare_player in player_options:
-                render_recommendation_comparison(
-                    selected_player_dict or {},
-                    player_options[compare_player],
-                )
+        for index, rec in enumerate(st.session_state.recommendations):
+            render_recommendation_card(rec, index=index)
+
+        compare_player = st.session_state.get("compare_player")
+
+        if compare_player and compare_player in player_options:
+            comparison_index, recommended_player = player_options[compare_player]
+
+            render_recommendation_comparison(
+                selected_player_dict or {},
+                recommended_player,
+                comparison_index=comparison_index,
+            )
 
 

@@ -10,7 +10,6 @@ from typing import Any
 
 import streamlit as st
 
-from dashboards.components.action_buttons import render_action_buttons
 from dashboards.components.metric_chip import format_kpi, render_metrics
 from dashboards.components.player_badges import render_badges
 from dashboards.components.similarity_bar import render_similarity_bar
@@ -26,7 +25,7 @@ def _recommendation_badge(score: float) -> tuple[str, str]:
         return "Good Recommendation", "medium"
     return "Consider", "low"
 
-def render_recommendation_card(player: dict[str, Any]) -> None:
+def render_recommendation_card(player: dict[str, Any], index: int = 0) -> None:
     """
     Render a single recommendation card using native Streamlit components.
 
@@ -133,7 +132,23 @@ def render_recommendation_card(player: dict[str, Any]) -> None:
         render_similarity_bar(sim_pct)
 
         # ── Action buttons ──────────────────────────────────────────
-        render_action_buttons(name)
+        cols = st.columns(3)
+
+        unique_id = player.get("player_id")
+        if unique_id is None:
+            unique_id = f"idx_{index}"
+
+        actions = [
+            ("Compare Player", f"compare_{unique_id}"),
+            ("View Profile", f"profile_{unique_id}"),
+            ("Export PDF", f"pdf_{unique_id}")
+        ]
+
+        for col, (label, key) in zip(cols, actions):
+            with col:
+                if st.button(label, key=key, use_container_width=True):
+                    if label == "Compare Player":
+                        st.session_state["compare_player"] = player["player_name"]
 
         st.divider()
 
