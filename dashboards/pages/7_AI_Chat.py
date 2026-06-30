@@ -22,6 +22,7 @@ if not is_authenticated():
 from ai.sql_agent import generate_sql
 from ai.query_executor import execute_query
 from ai.response_generator import explain_results
+from services.chat_transfer_service import generate_transfer_response
 
 # -----------------------------
 # Page Config handled by central entry point app.py
@@ -57,51 +58,65 @@ if prompt:
 
     with st.chat_message("user"):
         st.markdown(prompt)
+    # -----------------------------
+    # Check for transfer intent first
+    # -----------------------------
+    transfer_result = generate_transfer_response(prompt)
 
-    try:
-        # -----------------------------
-        # Generate SQL
-        # -----------------------------
-        sql_query = generate_sql(prompt)
-
-        # -----------------------------
-        # Execute SQL
-        # -----------------------------
-        df = execute_query(sql_query)
-
-        # -----------------------------
-        # Generate AI explanation
-        # -----------------------------
-        explanation = explain_results(
-            question=prompt,
-            dataframe_text=df.to_string(index=False),
-        )
-
-        response_text = (
-            "### 📝 Generated SQL\n"
-            f"```sql\n{sql_query}\n```\n\n"
-            "### 📊 Query Results\n"
-            "(See the table below)\n\n"
-            "### 🤖 AI Explanation\n"
-            f"{explanation}"
-        )
-
+    if transfer_result.get("handled"):
         st.session_state.messages.append(
             {
                 "role": "assistant",
-                "content": response_text,
+                "content": "**Transfer Recommendation Request**\n\nDetected transfer intent.",
             }
         )
-
         with st.chat_message("assistant"):
-            st.markdown("### 📝 Generated SQL")
-            st.code(sql_query, language="sql")
-
-            st.markdown("### 📊 Query Results")
-            st.dataframe(df, use_container_width=True)
-
-            st.markdown("### 🤖 AI Explanation")
-            st.write(explanation)
-
-    except Exception as e:
-        st.error(f"❌ Error: {e}")
+            st.json(transfer_result)
+    else:
+        try:
+            # -----------------------------
+            # Generate SQL
+            # -----------------------------
+            sql_query = generate_sql(prompt)
+        
+            # -----------------------------
+            # Execute SQL
+            # -----------------------------
+            df = execute_query(sql_query)
+        
+            # -----------------------------
+            # Generate AI explanation
+            # -----------------------------
+            explanation = explain_results(
+                question=prompt,
+                dataframe_text=df.to_string(index=False),
+            )
+        
+            response_text = (
+                "### 📝 Generated SQL\n"
+                f"```sql\n{sql_query}\n```\n\n"
+                "### 📊 Query Results\n"
+                "(See the table below)\n\n"
+                "### 🤖 AI Explanation\n"
+                f"{explanation}"
+            )
+        
+            st.session_state.messages.append(
+                {
+                    "role": "assistant",
+                    "content": response_text,
+                }
+            )
+        
+            with st.chat_message("assistant"):
+                st.markdown("### 📝 Generated SQL")
+                st.code(sql_query, language="sql")
+        
+                st.markdown("### 📊 Query Results")
+                st.dataframe(df, use_container_width=True)
+        
+                st.markdown("### 🤖 AI Explanation")
+                st.write(explanation)
+        
+        except Exception as e:
+            st.error(f"❌ Error: {e}")

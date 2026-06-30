@@ -1,0 +1,1 @@
+"""Pitch visualization components package."""

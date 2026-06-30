@@ -31,6 +31,9 @@ from dashboards.components.recommendation_comparison import (
 )
 from dashboards.components.recommendation_summary import render_recommendation_summary
 from dashboards.components.transfer_advisor import render_transfer_advisor
+from dashboards.components.visualizations.recommendation_dashboard import (
+    render_recommendation_dashboard,
+)
 
 st.title("🔄 AI Transfer Recommendations")
 
@@ -152,6 +155,11 @@ if st.session_state.has_searched:
             st.session_state.recommendations,
         )
         render_transfer_advisor(advisor)
+
+        render_recommendation_dashboard(
+            st.session_state.recommendations
+        )
+
         st.subheader("Recommended Players")
         # Inject badge CSS once before rendering cards
         # st.markdown(get_card_css(), unsafe_allow_html=True)
