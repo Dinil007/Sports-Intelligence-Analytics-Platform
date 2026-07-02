@@ -3,7 +3,7 @@ dashboards/components/tactical_analysis/tactical_dashboard.py
 =============================================================
 Orchestrator for all tactical analysis UI components.
 
-Calls generate_full_tactical_analysis() and renders all five sections.
+Calls existing tactical analysis UI components for all five sections.
 No calculations. No SQL. No business logic.
 """
 
@@ -13,7 +13,15 @@ from typing import Any
 
 import streamlit as st
 
-from services.tactical_analysis_service import generate_full_tactical_analysis
+from dashboards.components.tactical_analysis.coach_recommendations import (
+    render_coach_recommendations,
+)
+from dashboards.components.tactical_analysis.match_verdict import render_match_verdict
+from dashboards.components.tactical_analysis.tactical_summary import (
+    render_tactical_summary,
+)
+from dashboards.components.tactical_analysis.team_strengths import render_team_strengths
+from dashboards.components.tactical_analysis.team_weaknesses import render_team_weaknesses
 
 
 def render_tactical_dashboard(match_dashboard: dict[str, Any]) -> None:
@@ -30,16 +38,9 @@ def render_tactical_dashboard(match_dashboard: dict[str, Any]) -> None:
 
     st.header("AI Tactical Analysis")
 
-    analysis = generate_full_tactical_analysis(match_dashboard)
-
     # Executive Summary
     with st.container():
-        st.subheader("Executive Summary")
-        summary = analysis.get("summary", "")
-        if summary:
-            st.markdown(summary)
-        else:
-            st.info("Tactical summary is not available.")
+        render_tactical_summary(match_dashboard)
 
     st.divider()
 
@@ -47,42 +48,19 @@ def render_tactical_dashboard(match_dashboard: dict[str, Any]) -> None:
     col1, col2 = st.columns(2)
 
     with col1:
-        st.subheader("Strengths")
-        strengths = analysis.get("strengths", [])
-        if strengths:
-            for s in strengths:
-                st.markdown(f"- {s}")
-        else:
-            st.info("No strengths data available.")
+        render_team_strengths(match_dashboard)
 
     with col2:
-        st.subheader("Weaknesses")
-        weaknesses = analysis.get("weaknesses", [])
-        if weaknesses:
-            for w in weaknesses:
-                st.markdown(f"- {w}")
-        else:
-            st.info("No weaknesses data available.")
+        render_team_weaknesses(match_dashboard)
 
     st.divider()
 
     # Coach Recommendations
     with st.container():
-        st.subheader("Coach Recommendations")
-        recommendations = analysis.get("recommendations", [])
-        if recommendations:
-            for r in recommendations:
-                st.markdown(f"- {r}")
-        else:
-            st.info("No recommendations available.")
+        render_coach_recommendations(match_dashboard)
 
     st.divider()
 
     # Final Verdict
     with st.container():
-        st.subheader("Final Verdict")
-        verdict = analysis.get("verdict", "")
-        if verdict:
-            st.markdown(f"**{verdict}**")
-        else:
-            st.info("Match verdict is not available.")
+        render_match_verdict(match_dashboard)
