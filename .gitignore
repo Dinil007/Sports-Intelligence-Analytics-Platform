@@ -98,3 +98,10 @@ models/*.onnx
 # Scratch / temp files
 *.tmp
 *.bak
+
+# Debug archive
+scripts/debug_archive/
+
+# Logs
+stderr.log
+stdout.log
