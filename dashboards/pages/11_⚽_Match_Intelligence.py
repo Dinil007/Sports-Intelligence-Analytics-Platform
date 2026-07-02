@@ -32,6 +32,9 @@ from dashboards.components.match_visualizations.match_dashboard import (
 from dashboards.components.pitch_visualizations.pitch_dashboard import (
     render_pitch_dashboard,
 )
+from dashboards.components.passing_network.passing_network_dashboard import (
+    render_passing_network_dashboard,
+)
 from dashboards.components.tactical_analysis.tactical_dashboard import (
     render_tactical_dashboard,
 )
@@ -72,6 +75,9 @@ else:
     st.divider()
 
     render_pitch_dashboard(data)
+    st.divider()
+
+    render_passing_network_dashboard(data)
     st.divider()
 
     render_tactical_dashboard(data)
