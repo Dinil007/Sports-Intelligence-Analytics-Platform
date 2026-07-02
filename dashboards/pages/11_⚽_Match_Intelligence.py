@@ -35,6 +35,9 @@ from dashboards.components.pitch_visualizations.pitch_dashboard import (
 from dashboards.components.passing_network.passing_network_dashboard import (
     render_passing_network_dashboard,
 )
+from dashboards.components.match_momentum.momentum_dashboard import (
+    render_match_momentum_dashboard,
+)
 from dashboards.components.tactical_analysis.tactical_dashboard import (
     render_tactical_dashboard,
 )
@@ -78,6 +81,9 @@ else:
     st.divider()
 
     render_passing_network_dashboard(data)
+    st.divider()
+
+    render_match_momentum_dashboard(data)
     st.divider()
 
     render_tactical_dashboard(data)
