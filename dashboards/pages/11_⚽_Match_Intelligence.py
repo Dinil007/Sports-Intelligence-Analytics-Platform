@@ -41,6 +41,9 @@ from dashboards.components.match_momentum.momentum_dashboard import (
 from dashboards.components.player_intelligence.player_dashboard import (
     render_player_intelligence_dashboard,
 )
+from dashboards.components.team_intelligence.team_dashboard import (
+    render_team_intelligence_dashboard,
+)
 from dashboards.components.tactical_analysis.tactical_dashboard import (
     render_tactical_dashboard,
 )
@@ -90,6 +93,7 @@ else:
     st.divider()
 
     render_player_intelligence_dashboard(data)
+    render_team_intelligence_dashboard(data)
     st.divider()
 
     render_tactical_dashboard(data)
