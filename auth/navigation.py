@@ -23,6 +23,8 @@ PAGE_DEFINITIONS = {
     "scouting": (PROJECT_ROOT / "dashboards" / "pages" / "1_🔍_Scouting.py", "Scouting", "🔍"),
     "match_intelligence": (PROJECT_ROOT / "dashboards" / "pages" / "11_⚽_Match_Intelligence.py", "Match Intelligence", "⚽"),
     "scouting_recruitment": (PROJECT_ROOT / "dashboards" / "pages" / "12_🔍_Scouting_Recruitment.py", "Scouting & Recruitment", "🔍"),
+    "transfer_intelligence": (PROJECT_ROOT / "dashboards" / "pages" / "13_💰_Transfer_Intelligence.py", "Transfer Intelligence", "💰"),
+    "athlete_monitoring": (PROJECT_ROOT / "dashboards" / "pages" / "14_🏃_Athlete_Monitoring.py", "Athlete Monitoring", "🏃"),
 }
 
 ROLE_PAGE_KEYS = {
@@ -40,11 +42,15 @@ ROLE_PAGE_KEYS = {
         "admin_panel",
         "match_intelligence",
         "scouting_recruitment",
+        "transfer_intelligence",
+        "athlete_monitoring",
     ],
     "scout": [
         "home",
         "scouting",
         "scouting_recruitment",
+        "transfer_intelligence",
+        "athlete_monitoring",
         "player_comparison",
         "scouting_reports",
         "transfer_recs",
@@ -55,6 +61,7 @@ ROLE_PAGE_KEYS = {
         "ai_coach",
         "ai_chat",
         "team_analytics",
+        "athlete_monitoring",
         "injury_risk",
     ],
     "analyst": [
@@ -63,6 +70,8 @@ ROLE_PAGE_KEYS = {
         "team_analytics",
         "scouting_reports",
         "scouting_recruitment",
+        "transfer_intelligence",
+        "athlete_monitoring",
     ],
 }
 
