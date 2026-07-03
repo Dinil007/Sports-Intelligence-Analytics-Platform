@@ -57,3 +57,18 @@ flake8>=6.0.0
 # =========================
 faker>=25.0.0
 openpyxl>=3.1.0
+python-multipart>=0.0.9
+
+# =========================
+# Streaming & Data Engineering
+# =========================
+kafka-python>=2.0.2
+apache-airflow>=2.6.0
+
+# =========================
+# Machine Learning & Prediction
+# =========================
+joblib>=1.3.0
+shap>=0.42.0
+
+

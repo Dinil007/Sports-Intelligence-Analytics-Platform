@@ -1,0 +1,284 @@
+{
+    "injury_risk_model": [
+        {
+            "model_name": "injury_risk_model",
+            "algorithm": "XGBClassifier",
+            "version": "v1",
+            "training_date": "2026-07-03T13:56:11.021576+00:00",
+            "metrics": {
+                "accuracy": 1.0,
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1_score": 1.0,
+                "roc_auc": 1.0,
+                "cv_accuracy": 0.9964285714285716
+            },
+            "status": "production",
+            "location": "D:\\Sports Intelligence & Analytics Platform\\prediction\\serialized_models\\injury_risk_model.joblib"
+        },
+        {
+            "model_name": "injury_risk_model",
+            "algorithm": "XGBClassifier",
+            "version": "v2",
+            "training_date": "2026-07-03T13:56:32.336845+00:00",
+            "metrics": {
+                "accuracy": 1.0,
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1_score": 1.0,
+                "roc_auc": 1.0,
+                "cv_accuracy": 0.9964285714285716
+            },
+            "status": "production",
+            "location": "D:\\Sports Intelligence & Analytics Platform\\prediction\\serialized_models\\injury_risk_model.joblib"
+        },
+        {
+            "model_name": "injury_risk_model",
+            "algorithm": "XGBClassifier",
+            "version": "v3",
+            "training_date": "2026-07-03T13:57:35.023498+00:00",
+            "metrics": {
+                "accuracy": 1.0,
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1_score": 1.0,
+                "roc_auc": 1.0,
+                "cv_accuracy": 0.9964285714285716
+            },
+            "status": "production",
+            "location": "D:\\Sports Intelligence & Analytics Platform\\prediction\\serialized_models\\injury_risk_model.joblib"
+        }
+    ],
+    "market_value_model": [
+        {
+            "model_name": "market_value_model",
+            "algorithm": "XGBRegressor",
+            "version": "v1",
+            "training_date": "2026-07-03T13:56:15.774052+00:00",
+            "metrics": {
+                "mae": 5957889.437719428,
+                "rmse": 7681102.957386861,
+                "r2_score": 0.9369645577916786,
+                "cv_r2": 0.9364827707825281
+            },
+            "status": "production",
+            "location": "D:\\Sports Intelligence & Analytics Platform\\prediction\\serialized_models\\market_value_model.joblib"
+        },
+        {
+            "model_name": "market_value_model",
+            "algorithm": "XGBRegressor",
+            "version": "v2",
+            "training_date": "2026-07-03T13:56:35.082089+00:00",
+            "metrics": {
+                "mae": 5957889.437719428,
+                "rmse": 7681102.957386861,
+                "r2_score": 0.9369645577916786,
+                "cv_r2": 0.9364827707825281
+            },
+            "status": "production",
+            "location": "D:\\Sports Intelligence & Analytics Platform\\prediction\\serialized_models\\market_value_model.joblib"
+        },
+        {
+            "model_name": "market_value_model",
+            "algorithm": "XGBRegressor",
+            "version": "v3",
+            "training_date": "2026-07-03T13:57:37.965311+00:00",
+            "metrics": {
+                "mae": 5957889.437719428,
+                "rmse": 7681102.957386861,
+                "r2_score": 0.9369645577916786,
+                "cv_r2": 0.9364827707825281
+            },
+            "status": "production",
+            "location": "D:\\Sports Intelligence & Analytics Platform\\prediction\\serialized_models\\market_value_model.joblib"
+        }
+    ],
+    "match_outcome_model": [
+        {
+            "model_name": "match_outcome_model",
+            "algorithm": "GradientBoostingClassifier",
+            "version": "v1",
+            "training_date": "2026-07-03T13:56:22.105076+00:00",
+            "metrics": {
+                "accuracy": 1.0,
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1_score": 1.0,
+                "roc_auc": 1.0,
+                "cv_accuracy": 1.0
+            },
+            "status": "production",
+            "location": "D:\\Sports Intelligence & Analytics Platform\\prediction\\serialized_models\\match_outcome_model.joblib"
+        },
+        {
+            "model_name": "match_outcome_model",
+            "algorithm": "GradientBoostingClassifier",
+            "version": "v2",
+            "training_date": "2026-07-03T13:56:41.479551+00:00",
+            "metrics": {
+                "accuracy": 1.0,
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1_score": 1.0,
+                "roc_auc": 1.0,
+                "cv_accuracy": 1.0
+            },
+            "status": "production",
+            "location": "D:\\Sports Intelligence & Analytics Platform\\prediction\\serialized_models\\match_outcome_model.joblib"
+        },
+        {
+            "model_name": "match_outcome_model",
+            "algorithm": "GradientBoostingClassifier",
+            "version": "v3",
+            "training_date": "2026-07-03T13:57:44.366038+00:00",
+            "metrics": {
+                "accuracy": 1.0,
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1_score": 1.0,
+                "roc_auc": 1.0,
+                "cv_accuracy": 1.0
+            },
+            "status": "production",
+            "location": "D:\\Sports Intelligence & Analytics Platform\\prediction\\serialized_models\\match_outcome_model.joblib"
+        }
+    ],
+    "player_rating_model": [
+        {
+            "model_name": "player_rating_model",
+            "algorithm": "RandomForestRegressor",
+            "version": "v1",
+            "training_date": "2026-07-03T13:56:26.666066+00:00",
+            "metrics": {
+                "mae": 0.21905135117766786,
+                "rmse": 0.30960525573674225,
+                "r2_score": 0.8759164949688911,
+                "cv_r2": 0.860995773031419
+            },
+            "status": "production",
+            "location": "D:\\Sports Intelligence & Analytics Platform\\prediction\\serialized_models\\player_rating_model.joblib"
+        },
+        {
+            "model_name": "player_rating_model",
+            "algorithm": "RandomForestRegressor",
+            "version": "v2",
+            "training_date": "2026-07-03T13:56:44.503858+00:00",
+            "metrics": {
+                "mae": 0.2190513511776678,
+                "rmse": 0.3096052557367422,
+                "r2_score": 0.8759164949688911,
+                "cv_r2": 0.860995773031419
+            },
+            "status": "production",
+            "location": "D:\\Sports Intelligence & Analytics Platform\\prediction\\serialized_models\\player_rating_model.joblib"
+        },
+        {
+            "model_name": "player_rating_model",
+            "algorithm": "RandomForestRegressor",
+            "version": "v3",
+            "training_date": "2026-07-03T13:57:48.183893+00:00",
+            "metrics": {
+                "mae": 0.219051351177668,
+                "rmse": 0.3096052557367422,
+                "r2_score": 0.8759164949688911,
+                "cv_r2": 0.860995773031419
+            },
+            "status": "production",
+            "location": "D:\\Sports Intelligence & Analytics Platform\\prediction\\serialized_models\\player_rating_model.joblib"
+        }
+    ],
+    "team_strength_model": [
+        {
+            "model_name": "team_strength_model",
+            "algorithm": "RandomForestRegressor",
+            "version": "v1",
+            "training_date": "2026-07-03T13:56:30.396446+00:00",
+            "metrics": {
+                "mae": 1.9737036438874211,
+                "rmse": 2.7196688702977023,
+                "r2_score": 0.837047302408469,
+                "cv_r2": 0.8449781334001258
+            },
+            "status": "production",
+            "location": "D:\\Sports Intelligence & Analytics Platform\\prediction\\serialized_models\\team_strength_model.joblib"
+        },
+        {
+            "model_name": "team_strength_model",
+            "algorithm": "RandomForestRegressor",
+            "version": "v2",
+            "training_date": "2026-07-03T13:56:48.502499+00:00",
+            "metrics": {
+                "mae": 1.9737036438874194,
+                "rmse": 2.7196688702977014,
+                "r2_score": 0.837047302408469,
+                "cv_r2": 0.8449781334001258
+            },
+            "status": "production",
+            "location": "D:\\Sports Intelligence & Analytics Platform\\prediction\\serialized_models\\team_strength_model.joblib"
+        },
+        {
+            "model_name": "team_strength_model",
+            "algorithm": "RandomForestRegressor",
+            "version": "v3",
+            "training_date": "2026-07-03T13:57:52.259971+00:00",
+            "metrics": {
+                "mae": 1.9737036438874243,
+                "rmse": 2.719668870297703,
+                "r2_score": 0.8370473024084689,
+                "cv_r2": 0.8449781334001258
+            },
+            "status": "production",
+            "location": "D:\\Sports Intelligence & Analytics Platform\\prediction\\serialized_models\\team_strength_model.joblib"
+        }
+    ],
+    "transfer_success_model": [
+        {
+            "model_name": "transfer_success_model",
+            "algorithm": "LogisticRegression",
+            "version": "v1",
+            "training_date": "2026-07-03T13:56:30.722368+00:00",
+            "metrics": {
+                "accuracy": 0.875,
+                "precision": 0.8754736842105263,
+                "recall": 0.875,
+                "f1_score": 0.8685738365015451,
+                "roc_auc": 0.9247606019151846,
+                "cv_f1": 0.7247502920360063
+            },
+            "status": "production",
+            "location": "D:\\Sports Intelligence & Analytics Platform\\prediction\\serialized_models\\transfer_success_model.joblib"
+        },
+        {
+            "model_name": "transfer_success_model",
+            "algorithm": "LogisticRegression",
+            "version": "v2",
+            "training_date": "2026-07-03T13:56:48.782832+00:00",
+            "metrics": {
+                "accuracy": 0.875,
+                "precision": 0.8754736842105263,
+                "recall": 0.875,
+                "f1_score": 0.8685738365015451,
+                "roc_auc": 0.9247606019151846,
+                "cv_f1": 0.7247502920360063
+            },
+            "status": "production",
+            "location": "D:\\Sports Intelligence & Analytics Platform\\prediction\\serialized_models\\transfer_success_model.joblib"
+        },
+        {
+            "model_name": "transfer_success_model",
+            "algorithm": "LogisticRegression",
+            "version": "v3",
+            "training_date": "2026-07-03T13:57:52.467484+00:00",
+            "metrics": {
+                "accuracy": 0.875,
+                "precision": 0.8754736842105263,
+                "recall": 0.875,
+                "f1_score": 0.8685738365015451,
+                "roc_auc": 0.9247606019151846,
+                "cv_f1": 0.7247502920360063
+            },
+            "status": "production",
+            "location": "D:\\Sports Intelligence & Analytics Platform\\prediction\\serialized_models\\transfer_success_model.joblib"
+        }
+    ]
+}

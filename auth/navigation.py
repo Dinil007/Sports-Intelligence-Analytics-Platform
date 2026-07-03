@@ -25,6 +25,7 @@ PAGE_DEFINITIONS = {
     "scouting_recruitment": (PROJECT_ROOT / "dashboards" / "pages" / "12_🔍_Scouting_Recruitment.py", "Scouting & Recruitment", "🔍"),
     "transfer_intelligence": (PROJECT_ROOT / "dashboards" / "pages" / "13_💰_Transfer_Intelligence.py", "Transfer Intelligence", "💰"),
     "athlete_monitoring": (PROJECT_ROOT / "dashboards" / "pages" / "14_🏃_Athlete_Monitoring.py", "Athlete Monitoring", "🏃"),
+    "executive_bi": (PROJECT_ROOT / "dashboards" / "pages" / "16_📊_Executive_Business_Intelligence.py", "Executive Business Intelligence", "📊"),
 }
 
 ROLE_PAGE_KEYS = {
@@ -44,6 +45,7 @@ ROLE_PAGE_KEYS = {
         "scouting_recruitment",
         "transfer_intelligence",
         "athlete_monitoring",
+        "executive_bi",
     ],
     "scout": [
         "home",
@@ -72,6 +74,7 @@ ROLE_PAGE_KEYS = {
         "scouting_recruitment",
         "transfer_intelligence",
         "athlete_monitoring",
+        "executive_bi",
     ],
 }
 

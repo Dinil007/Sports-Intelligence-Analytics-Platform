@@ -96,9 +96,8 @@ def _build_page_registry():
 
 
 def _get_page_registry():
-    if "_page_registry" not in st.session_state:
-        st.session_state._page_registry = _build_page_registry()
-    return st.session_state._page_registry
+    # Always rebuild from PAGE_DEFINITIONS so new pages are never missed.
+    return _build_page_registry()
 
 
 def _pages_for_role(role: str):
@@ -238,6 +237,24 @@ if is_authenticated():
         logout_user(cookies)
 
     pages = _pages_for_role(role)
+
+    # --- TEMPORARY RUNTIME DEBUG ---
+    st.sidebar.markdown("## DEBUG")
+    st.sidebar.write("Current Role:", role)
+    st.sidebar.write("Total Pages:", len(pages))
+    st.sidebar.write("Page Titles:")
+    for page in pages:
+        st.sidebar.write("-", page.title)
+
+    print("=" * 60)
+    print("ROLE:", role)
+    print("TOTAL PAGES:", len(pages))
+    print("PAGE TITLES:")
+    for page in pages:
+        print("-", page.title)
+    print("=" * 60)
+    # --- END TEMPORARY RUNTIME DEBUG ---
+
     if not pages:
         logout_user(cookies)
 

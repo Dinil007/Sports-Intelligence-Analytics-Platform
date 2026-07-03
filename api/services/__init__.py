@@ -1,0 +1,1 @@
+"""API service adapters for existing SPORTA VISTA PRO services."""
