@@ -22,6 +22,7 @@ PAGE_DEFINITIONS = {
     "admin_panel": (PROJECT_ROOT / "dashboards" / "pages" / "Admin.py", "Admin Panel", "⚙️"),
     "scouting": (PROJECT_ROOT / "dashboards" / "pages" / "1_🔍_Scouting.py", "Scouting", "🔍"),
     "match_intelligence": (PROJECT_ROOT / "dashboards" / "pages" / "11_⚽_Match_Intelligence.py", "Match Intelligence", "⚽"),
+    "scouting_recruitment": (PROJECT_ROOT / "dashboards" / "pages" / "12_🔍_Scouting_Recruitment.py", "Scouting & Recruitment", "🔍"),
 }
 
 ROLE_PAGE_KEYS = {
@@ -38,10 +39,12 @@ ROLE_PAGE_KEYS = {
         "injury_risk",
         "admin_panel",
         "match_intelligence",
+        "scouting_recruitment",
     ],
     "scout": [
         "home",
         "scouting",
+        "scouting_recruitment",
         "player_comparison",
         "scouting_reports",
         "transfer_recs",
@@ -59,6 +62,7 @@ ROLE_PAGE_KEYS = {
         "xg_analytics",
         "team_analytics",
         "scouting_reports",
+        "scouting_recruitment",
     ],
 }
 
