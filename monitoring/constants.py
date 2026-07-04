@@ -1,0 +1,17 @@
+"""Constants for Observability & Monitoring platform."""
+from __future__ import annotations
+
+# Service status constants
+STATUS_HEALTHY = "Healthy"
+STATUS_WARNING = "Warning"
+STATUS_DEGRADED = "Degraded"
+STATUS_CRITICAL = "Critical"
+STATUS_OFFLINE = "Offline"
+
+# Alert levels
+ALERT_INFO = "INFO"
+ALERT_WARNING = "WARNING"
+ALERT_CRITICAL = "CRITICAL"
+
+VALID_STATUSES = {STATUS_HEALTHY, STATUS_WARNING, STATUS_DEGRADED, STATUS_CRITICAL, STATUS_OFFLINE}
+VALID_ALERT_LEVELS = {ALERT_INFO, ALERT_WARNING, ALERT_CRITICAL}

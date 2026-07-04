@@ -36,6 +36,7 @@ PAGE_DEFINITIONS = {
     "athlete_monitoring": (PROJECT_ROOT / "dashboards" / "pages" / "14_🏃_Athlete_Monitoring.py", "Athlete Monitoring", "🏃"),
     "executive_bi": (PROJECT_ROOT / "dashboards" / "pages" / "16_📊_Executive_Business_Intelligence.py", "Executive Business Intelligence", "📊"),
     "mlops_platform": (PROJECT_ROOT / "dashboards" / "pages" / "17_🤖_MLOps_Platform.py", "MLOps Platform", "🤖"),
+    "monitoring_platform": (PROJECT_ROOT / "dashboards" / "pages" / "18_📈_Observability_Monitoring.py", "Observability & Monitoring", "📈"),
 }
 
 ROLE_PAGE_KEYS = {
@@ -57,6 +58,7 @@ ROLE_PAGE_KEYS = {
         "athlete_monitoring",
         "executive_bi",
         "mlops_platform",
+        "monitoring_platform",
     ],
     "scout": [
         "home",
@@ -87,6 +89,7 @@ ROLE_PAGE_KEYS = {
         "athlete_monitoring",
         "executive_bi",
         "mlops_platform",
+        "monitoring_platform",
     ],
 }
 
@@ -106,7 +109,7 @@ ROLE_PAGE_GROUPS: dict[str, dict[str, list[str]]] = {
         "Transfers": ["transfer_recs", "transfer_advisor", "transfer_intelligence"],
         "Monitoring": ["athlete_monitoring"],
         "Management": ["executive_bi", "admin_panel"],
-        "Platform": ["mlops_platform"],
+        "Platform": ["mlops_platform", "monitoring_platform"],
     },
     "scout": {
         "Home": ["home"],
@@ -127,7 +130,7 @@ ROLE_PAGE_GROUPS: dict[str, dict[str, list[str]]] = {
         "Transfers": ["transfer_intelligence"],
         "Monitoring": ["athlete_monitoring"],
         "Management": ["executive_bi"],
-        "Platform": ["mlops_platform"],
+        "Platform": ["mlops_platform", "monitoring_platform"],
     },
 }
 

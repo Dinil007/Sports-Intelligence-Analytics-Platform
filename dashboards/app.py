@@ -260,6 +260,17 @@ if is_authenticated():
     if not groups:
         logout_user(cookies)
 
+    # ── RUNTIME DIAGNOSTIC ────────────────────────────────────────────────────
+    print("=" * 60)
+    print(f"RUNTIME NAV DIAGNOSTIC — role={role!r}")
+    print(f"Total sections in groups: {len(groups)}")
+    for section, pages in groups.items():
+        print(f"  [{section}]")
+        for p in pages:
+            print(f"    - {p.title}")
+    print("=" * 60)
+    # ─────────────────────────────────────────────────────────────────────────
+
     pg = st.navigation(groups)
     show_sidebar_user_profile(cookies)
 else:
