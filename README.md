@@ -1,4 +1,12 @@
-# ⚽ SPORTA VISTA PRO – AI-Powered Sports Intelligence & Analytics Platform
+# ⚽ SPORTA VISTA PRO
+
+<h3 align="center">
+AI-Powered Sports Intelligence & Analytics Platform
+</h3>
+
+<p align="center">
+Enterprise-grade Sports Analytics Platform for Data Engineering, Business Intelligence, Artificial Intelligence, Machine Learning, and Football Analytics.
+</p>
 
 <p align="center">
 
@@ -6,1025 +14,1308 @@
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Database-blue?style=for-the-badge&logo=postgresql)
 ![FastAPI](https://img.shields.io/badge/FastAPI-Backend-green?style=for-the-badge&logo=fastapi)
 ![Streamlit](https://img.shields.io/badge/Streamlit-Dashboard-red?style=for-the-badge&logo=streamlit)
-![Power BI](https://img.shields.io/badge/PowerBI-Business%20Intelligence-yellow?style=for-the-badge&logo=powerbi)
+![Power BI](https://img.shields.io/badge/Power%20BI-Business%20Intelligence-yellow?style=for-the-badge&logo=powerbi)
+![Apache Kafka](https://img.shields.io/badge/Apache-Kafka-black?style=for-the-badge&logo=apachekafka)
+![Apache Airflow](https://img.shields.io/badge/Apache-Airflow-017CEE?style=for-the-badge&logo=apacheairflow)
 ![Machine Learning](https://img.shields.io/badge/Machine-Learning-orange?style=for-the-badge)
 ![AI](https://img.shields.io/badge/AI-Groq%20LLM-purple?style=for-the-badge)
+![JWT](https://img.shields.io/badge/JWT-Authentication-success?style=for-the-badge)
+![License](https://img.shields.io/badge/License-MIT-brightgreen?style=for-the-badge)
 
 </p>
 
 ---
 
+## 🚀 Overview
+
+**SPORTA VISTA PRO** is an enterprise-grade **Sports Intelligence & Analytics Platform** that transforms raw football event data into actionable insights for **coaches, analysts, scouts, sporting directors, executives, and performance teams**.
+
+Built as a full-stack analytics ecosystem, the platform combines **Data Engineering, Business Intelligence, Artificial Intelligence, Machine Learning, Streaming, REST APIs, and Interactive Dashboards** to support modern football decision-making.
+
+The project demonstrates the complete lifecycle of an analytics platform—from data ingestion and warehousing to AI-powered recommendations, predictive analytics, executive reporting, and real-time monitoring—using enterprise-inspired architecture and modern data technologies.
+
+---
+
+## ✨ Key Highlights
+
+- ⚽ End-to-End Sports Analytics Platform
+- 🗄️ Enterprise PostgreSQL Data Warehouse
+- 🔄 Automated ETL & Data Engineering Pipelines
+- 📊 Interactive Streamlit Dashboards
+- 🚀 FastAPI REST API with JWT Authentication
+- 🤖 AI-Powered Football Intelligence & Chat Assistant
+- 📈 Match, Player, Team & Tactical Analytics
+- 🔍 Advanced Scouting & Transfer Intelligence
+- 🏃 Athlete Monitoring & Performance Analytics
+- 🧠 Machine Learning Prediction Platform
+- ⚙️ Enterprise MLOps Platform
+- 📡 Real-Time Streaming Architecture (Kafka)
+- 📉 Executive Business Intelligence Dashboard
+- 📈 Observability & Monitoring Platform
+- 🔐 Role-Based Access Control (RBAC)
+- 🏗️ Modular Enterprise Architecture
+
+---
+
+## 📑 Table of Contents
+
+- Project Overview
+- Platform Vision
+- Core Features
+- System Architecture
+- Technology Stack
+- Platform Modules
+- Project Structure
+- Dashboard Gallery
+- API Platform
+- Database & Data Warehouse
+- ETL & Data Engineering
+- Streaming Platform
+- Machine Learning Platform
+- MLOps Platform
+- Observability & Monitoring
+- Installation
+- Quick Start
+- Documentation
+- Roadmap
+- License
+- Author
 # 📌 Project Overview
 
-**SPORTA VISTA PRO** is an enterprise-grade **Sports Intelligence & Analytics Platform** designed to help coaches, analysts, scouts, sporting directors, executives, and performance teams make data-driven decisions using modern Data Engineering, Business Intelligence, Artificial Intelligence, and Machine Learning.
+Modern football generates millions of data points from every match, including passes, shots, defensive actions, player movements, tactical events, and performance metrics. Converting this vast amount of raw data into meaningful insights requires a combination of data engineering, analytics, artificial intelligence, and visualization.
 
-The platform combines a modern analytics architecture with AI-powered insights to transform raw football event data into interactive dashboards, tactical intelligence, player scouting reports, transfer recommendations, and business analytics.
+**SPORTA VISTA PRO** is an end-to-end **Sports Intelligence & Analytics Platform** developed to transform football event data into actionable insights for technical and business decision-making. The platform enables coaches, analysts, scouts, sporting directors, executives, and performance teams to explore player performance, evaluate tactical strategies, identify transfer targets, monitor athlete performance, and generate AI-powered recommendations through a unified analytics ecosystem.
 
-SPORTA VISTA PRO is being developed as a scalable platform that can evolve from football analytics into a complete multi-sport intelligence ecosystem.
+Built using modern data technologies, the platform integrates **PostgreSQL, Python, FastAPI, Streamlit, Apache Kafka, Apache Airflow, Machine Learning, and Business Intelligence** into a modular enterprise architecture. From data ingestion and ETL pipelines to interactive dashboards, predictive analytics, REST APIs, executive reporting, and monitoring, every component is designed to demonstrate real-world analytics workflows and scalable software engineering practices.
 
----
-
-# 🎯 Vision
-
-Modern football clubs generate millions of events every season.
-
-Traditional dashboards answer:
-
-> What happened?
-
-SPORTA VISTA PRO is designed to answer:
-
-- Why did it happen?
-- Which player best fits our tactical system?
-- Which player should replace an injured midfielder?
-- Why did we lose the match?
-- Which tactical changes should the coach make?
-- Which players are undervalued in the market?
-- Which players are at risk of injury?
-- Which transfers provide the highest value?
-
-The long-term objective is to create a platform that combines:
-
-- Data Engineering
-- Business Intelligence
-- Machine Learning
-- Artificial Intelligence
-- Decision Support Systems
-- Interactive Analytics
-- Tactical Intelligence
-
-into a single enterprise solution.
+Rather than focusing solely on reporting historical statistics, SPORTA VISTA PRO combines descriptive, diagnostic, predictive, and AI-assisted analytics to support informed decision-making across football operations. The architecture is designed to be modular and extensible, allowing future integration of additional sports, live data sources, advanced machine learning models, cloud deployment, and enterprise-scale analytics capabilities.
 
 ---
 
-# 🏗 Platform Architecture
+## 🎯 Objectives
+
+The primary objectives of SPORTA VISTA PRO are to:
+
+- Transform raw football event data into analytics-ready datasets through automated ETL pipelines.
+- Deliver interactive dashboards for player, team, match, tactical, scouting, and executive analytics.
+- Support recruitment and transfer decisions using AI-assisted recommendations and similarity analysis.
+- Provide predictive analytics through machine learning models for performance evaluation and decision support.
+- Enable secure, role-based access to analytics through authentication and REST APIs.
+- Demonstrate modern enterprise practices including modular architecture, streaming pipelines, MLOps, and observability.
+
+---
+
+# 🎯 Platform Vision
+
+Modern football clubs generate millions of data points across every season, including match events, player performance metrics, tactical actions, physical monitoring data, and business operations. While traditional analytics platforms primarily focus on descriptive statistics, modern football requires intelligent systems capable of supporting complex decision-making across technical, tactical, recruitment, and executive domains.
+
+SPORTA VISTA PRO was designed with the vision of building a unified sports intelligence platform that combines **Data Engineering, Business Intelligence, Artificial Intelligence, Machine Learning, and Interactive Analytics** into a single ecosystem. Rather than presenting isolated reports, the platform aims to provide connected insights that help users understand performance, identify opportunities, predict outcomes, and support strategic decisions.
+
+The platform is built around four levels of analytics:
+
+- **Descriptive Analytics** – Understand what happened through interactive dashboards and performance metrics.
+- **Diagnostic Analytics** – Explore why events occurred using tactical, player, and match intelligence.
+- **Predictive Analytics** – Forecast performance, identify injury risks, evaluate transfer success, and generate future insights using machine learning.
+- **Prescriptive Analytics** – Deliver AI-assisted recommendations for scouting, recruitment, tactical planning, and executive decision-making.
+
+SPORTA VISTA PRO is designed as a scalable and modular platform capable of supporting multiple user roles, including coaches, analysts, scouts, sporting directors, executives, and performance teams. Its architecture enables seamless integration of new data sources, advanced analytical models, and future technologies without impacting existing components.
+
+Beyond football, the long-term vision is to evolve SPORTA VISTA PRO into a multi-sport intelligence platform capable of supporting analytics across sports such as cricket, basketball, hockey, and other data-rich sporting environments.
+
+---
+
+## 🌍 Long-Term Goals
+
+- Build a unified AI-powered sports intelligence ecosystem.
+- Integrate live match data through real-time streaming architectures.
+- Expand predictive analytics with advanced machine learning models.
+- Support multi-sport analytics through a scalable modular architecture.
+- Enable cloud-native deployment and enterprise-grade scalability.
+- Deliver intelligent decision support for technical, tactical, medical, recruitment, and business operations.
+
+---
+
+# ✨ Core Features
+
+SPORTA VISTA PRO combines data engineering, artificial intelligence, business intelligence, machine learning, and modern software engineering practices into a unified football analytics platform. The platform provides end-to-end capabilities spanning data collection, analytics, prediction, visualization, and operational monitoring.
+
+---
+
+## ⚽ Football Intelligence
+
+- Match Intelligence & Tactical Analytics
+- Player Performance Analysis
+- Team Performance Analytics
+- Expected Goals (xG) Analytics
+- Player Comparison Engine
+- AI-Powered Football Insights
+
+---
+
+## 🔍 Scouting & Recruitment
+
+- AI-Assisted Scouting Reports
+- Player Similarity Analysis
+- Transfer Intelligence Dashboard
+- Transfer Recommendation Engine
+- Recruitment Analytics
+- Squad Evaluation
+
+---
+
+## 🏃 Athlete Performance
+
+- Athlete Monitoring Dashboard
+- Performance Tracking
+- Injury Risk Assessment
+- Player Workload Monitoring
+- Fitness & Availability Insights
+
+---
+
+## 📊 Business Intelligence
+
+- Executive Business Intelligence Dashboard
+- Financial Performance Analytics
+- Revenue & Expense Analysis
+- Player ROI Analysis
+- Contract & Wage Analytics
+- Fan Engagement Analytics
+- Sponsorship & Commercial Analytics
+
+---
+
+## 🤖 Artificial Intelligence
+
+- AI Football Chat Assistant
+- Natural Language Analytics
+- Intelligent Query Processing
+- AI-Powered Decision Support
+- Automated Insight Generation
+
+---
+
+## 🧠 Machine Learning Platform
+
+- Match Outcome Prediction
+- Player Rating Prediction
+- Transfer Success Prediction
+- Injury Risk Prediction
+- Market Value Estimation
+- Team Strength Prediction
+
+---
+
+## ⚙️ Enterprise MLOps
+
+- Experiment Tracking
+- Model Registry
+- Feature Store
+- Drift Detection
+- Model Deployment
+- Retraining Pipeline
+- Prediction Monitoring
+
+---
+
+## 📈 Observability & Monitoring
+
+- System Health Dashboard
+- API Monitoring
+- Database Monitoring
+- Streaming Monitoring
+- ETL Monitoring
+- Authentication Monitoring
+- Audit Logs
+- Alert Center
+- Performance Monitoring
+
+---
+
+## 🔐 Enterprise Platform
+
+- Role-Based Access Control (RBAC)
+- JWT Authentication
+- FastAPI REST APIs
+- PostgreSQL Data Warehouse
+- ETL Pipelines
+- Apache Kafka Streaming
+- Apache Airflow Scheduling
+- Interactive Streamlit Dashboards
+
+---
+
+# 🏗️ System Architecture
+
+SPORTA VISTA PRO follows a modular, enterprise-grade architecture that separates data ingestion, processing, analytics, machine learning, APIs, dashboards, and monitoring into independent layers. This layered approach improves maintainability, scalability, and extensibility while allowing new capabilities to be added without impacting existing modules.
+
+---
+
+## 📐 High-Level Architecture
 
 ```text
-                    External Football Data
-         (StatsBomb, FBref, Understat, APIs)
-
-                         │
-                         ▼
-
-                  ETL & Data Engineering
-
-                         │
-                         ▼
-
-               PostgreSQL Data Warehouse
-
-                         │
-     ┌───────────────────┼───────────────────┐
-     ▼                   ▼                   ▼
-
- Player Intelligence   Match Intelligence   Tactical Analytics
-
-     ▼                   ▼                   ▼
-
- AI Transfer Engine   Visualization Layer   AI Coach Assistant
-
-                         │
-                         ▼
-
-                Streamlit Analytics Portal
-
-                         │
-                         ▼
-
-               Coaches • Scouts • Analysts
-               Sporting Directors • Executives
+                          Users
+                             │
+        ┌────────────────────┼────────────────────┐
+        │                    │                    │
+   Coaches              Analysts           Club Executives
+        │                    │                    │
+        └────────────────────┼────────────────────┘
+                             │
+                  Streamlit Dashboard Layer
+                             │
+        ┌────────────────────┼────────────────────┐
+        │                    │                    │
+ Executive BI        AI Assistant         Football Analytics
+        │                    │                    │
+        └────────────────────┼────────────────────┘
+                             │
+                  Service Layer (Business Logic)
+                             │
+        ┌────────────────────┼────────────────────┐
+        │                    │                    │
+ Prediction           Monitoring          Authentication
+        │                    │                    │
+        └────────────────────┼────────────────────┘
+                             │
+                 FastAPI REST API Layer
+                             │
+        ┌────────────────────┼────────────────────┐
+        │                    │                    │
+     ETL Engine        Streaming Engine      MLOps Platform
+        │                    │                    │
+        └────────────────────┼────────────────────┘
+                             │
+                 PostgreSQL Data Warehouse
+                             │
+        ┌────────────────────┼────────────────────┐
+        │                    │                    │
+     Match Data        Player Data         Event Data
 ```
 
 ---
 
-# 🚀 What SPORTA VISTA PRO Provides
+# 🔄 Data Flow
 
-The platform integrates multiple analytics domains into a single ecosystem.
-
-## ⚽ Player Intelligence
-
-- Player Performance Analytics
-- SPORTA Score
-- Player Comparison
-- Position Analysis
-- Performance Ranking
-- Advanced Football KPIs
-- Player Search
-- AI Assisted Analysis
+```text
+Football Data
+      │
+      ▼
+ETL Pipelines
+      │
+      ▼
+PostgreSQL Data Warehouse
+      │
+      ▼
+Analytics Services
+      │
+      ├─────────────► Machine Learning Models
+      │
+      ├─────────────► AI Assistant
+      │
+      ├─────────────► REST APIs
+      │
+      ├─────────────► Executive BI
+      │
+      └─────────────► Streamlit Dashboards
+                        │
+                        ▼
+                     End Users
+```
 
 ---
 
-## 🔍 Scouting Intelligence
+# 🧩 Platform Layers
 
-- Advanced Player Scouting
-- Similar Player Search
-- AI Transfer Recommendations
-- Transfer Advisor
-- Recruitment Analytics
-- Replacement Suggestions
-- Position Based Filtering
-- Similarity Analytics
+## 1️⃣ Data Layer
+
+Responsible for storing structured football data using PostgreSQL.
+
+Includes:
+
+- Competitions
+- Matches
+- Teams
+- Players
+- Events
+- Shots
+- Analytics Views
 
 ---
 
-## 📊 Match Intelligence
+## 2️⃣ Data Engineering Layer
 
-- Match Dashboard
-- Team Statistics
+Processes raw football datasets into analytics-ready tables.
+
+Components:
+
+- ETL Pipelines
+- Data Validation
+- Data Cleaning
+- Feature Engineering
+- Incremental Loading
+
+---
+
+## 3️⃣ Business Logic Layer
+
+Implements all analytical calculations used throughout the platform.
+
+Examples include:
+
 - Player Statistics
-- Timeline Analysis
-- Match Events
-- Possession Analysis
-- Pass Accuracy
-- Progressive Passing
-- PPDA
-- Pressure Analysis
-- xG Analysis
-- Shot Analysis
+- Team Analytics
+- xG Calculations
+- Scouting Intelligence
+- Executive KPIs
+- Transfer Analysis
 
 ---
 
-## ⚽ Pitch Intelligence
+## 4️⃣ Machine Learning Layer
 
-Interactive football pitch visualizations including:
+Provides predictive analytics and intelligent recommendations.
 
-- Player Heatmaps
-- Team Heatmaps
-- Shot Maps
-- Pass Maps
-- Carry Maps
-- Pressure Maps
-- Defensive Action Maps
+Models include:
 
-These visualizations are generated directly from event-level match data.
-
----
-
-## 🧠 Tactical Intelligence
-
-AI-powered tactical analysis including:
-
-- Executive Match Summary
-- Team Strength Analysis
-- Team Weakness Analysis
-- Coach Recommendations
-- Match Verdict
-- Tactical Insights
-
-The Tactical Assistant transforms match statistics into football-specific coaching insights.
+- Match Outcome Prediction
+- Player Rating Prediction
+- Injury Risk Prediction
+- Transfer Success Prediction
+- Market Value Prediction
+- Team Strength Prediction
 
 ---
 
-## 🤖 AI Assistant
+## 5️⃣ API Layer
 
-The integrated AI assistant enables natural language interaction with the platform.
+Exposes platform functionality through FastAPI.
 
-Examples:
-
-> Compare Messi and Ronaldo
-
-> Recommend a replacement for Rodri
-
-> Show top midfielders under 24
-
-> Why did England lose?
-
-> Summarize this match
-
-> Explain the tactical weaknesses
-
----
-
-## 📈 Business Intelligence
-
-Enterprise dashboards provide:
-
-- Team KPIs
-- Player KPIs
-- Match KPIs
-- Scouting Analytics
-- Executive Reporting
-- Interactive Visualizations
-- Decision Support Analytics
-
----
-
-# 💻 Technology Stack
-
-## Programming
-
-- Python
-
----
-
-## Database
-
-- PostgreSQL
-- SQLAlchemy
-
----
-
-## Data Engineering
-
-- Python ETL
-- Pandas
-- NumPy
-
----
-
-## Backend
-
-- FastAPI
-- Uvicorn
-
----
-
-## Machine Learning
-
-- Scikit-Learn
-
-Current ML modules include:
-
-- Player Similarity
-- Recommendation Engine
-- Performance Analytics
-
-Future modules include:
-
-- Injury Prediction
-- Match Prediction
-- Player Valuation
-- Team Style Classification
-
----
-
-## Artificial Intelligence
-
-- Groq LLM
-- Natural Language Query Processing
-- AI Tactical Analysis
-- AI Transfer Recommendations
-
----
-
-## Dashboard
-
-- Streamlit
-- Plotly
-
-Interactive dashboards provide:
-
-- Match Intelligence
-- Tactical Intelligence
-- Player Intelligence
-- Transfer Intelligence
-
----
-
-## Authentication
+Features include:
 
 - JWT Authentication
-- Role Based Access Control (RBAC)
-- Secure Login System
-
-Supported roles include:
-
-- Administrator
-- Scout
-- Analyst
-- Coach
+- REST Endpoints
+- Role-Based Access
+- JSON APIs
+- Secure Communication
 
 ---
 
-## Data Sources
+## 6️⃣ Presentation Layer
 
-The platform is designed to integrate multiple football datasets.
+Interactive dashboards built with Streamlit.
 
-Current and planned sources include:
+Supports:
 
-- StatsBomb Open Data
-- FBref
-- Understat
-- FIFA datasets
-- Transfermarkt (planned)
-- Live API integrations (planned)
-
----
-
-# ⭐ Core Platform Features
-
- Modular Enterprise Architecture
-
- PostgreSQL Data Warehouse
-
- ETL Pipelines
-
- AI Assisted Analytics
-
- Interactive Dashboards
-
- Player Intelligence Engine
-
- Match Intelligence Dashboard
-
- Tactical Intelligence
-
- Transfer Recommendation Engine
-
- Football Pitch Analytics
-
- Secure Authentication
-
- Role Based Access Control
-
- Interactive Visual Analytics
-
- Machine Learning Ready
-
- AI Ready Architecture
-
- Multi-Sport Ready Design
+- Coaches
+- Analysts
+- Scouts
+- Executives
+- Administrators
 
 ---
 
-# 📂 Project Structure
+## 7️⃣ Platform Services
 
-The project follows a layered enterprise architecture to ensure scalability, maintainability, and separation of concerns.
+Enterprise services supporting the platform.
 
-```text
-SPORTA VISTA PRO
-│
-├── api/                          # FastAPI endpoints
-├── assets/                       # Images, logos and static resources
-├── auth/                         # Authentication & RBAC
-├── dashboards/                   # Streamlit dashboards
-│   ├── components/
-│   └── pages/
-│
-├── database/                     # Database models, repositories, SQL views
-├── data/
-│   ├── raw/
-│   ├── processed/
-│   └── external/
-│
-├── docs/
-├── etl/                          # ETL pipelines
-├── ml/                           # Machine Learning modules
-├── services/                     # Business logic layer
-├── utils/                        # Shared utilities
-├── scripts/                      # Maintenance & helper scripts
-├── tests/
-│
-├── requirements.txt
-├── README.md
-└── app.py
-```
+Includes:
+
+- Streaming Platform
+- MLOps Platform
+- Monitoring Platform
+- Authentication
+- Logging
+- Audit System
 
 ---
 
-# ⚙ System Architecture
+# 🎯 Architecture Highlights
 
-SPORTA VISTA PRO follows a clean layered architecture.
-
-```text
-                 Streamlit UI
-                      │
-                      ▼
-              Service Layer
-                      │
-      ┌───────────────┼───────────────┐
-      ▼               ▼               ▼
- Match Services   Player Services   AI Services
-      │               │               │
-      └───────────────┼───────────────┘
-                      ▼
-            Repository Layer
-                      │
-                      ▼
-           PostgreSQL Data Warehouse
-                      │
-                      ▼
-                ETL Pipelines
-                      │
-                      ▼
-             Football Data Sources
-```
+- Modular Enterprise Architecture
+- Separation of Concerns
+- Layered System Design
+- Scalable Service Architecture
+- Independent Platform Modules
+- Role-Based Access Control
+- AI & Machine Learning Integration
+- Enterprise Data Engineering Pipeline
+- REST API Integration
+- Real-Time Streaming Ready
+- MLOps Ready
+- Observability Ready
 
 ---
 
-# 📊 Major Platform Modules
+# 🛠️ Technology Stack
 
-## Player Intelligence
+SPORTA VISTA PRO integrates modern technologies across data engineering, backend development, machine learning, business intelligence, and enterprise analytics to deliver a complete sports intelligence platform.
 
-The Player Intelligence Engine provides detailed player analytics.
+---
+
+## 💻 Programming Languages
+
+| Technology | Purpose |
+|------------|---------|
+| Python | Core application development, ETL, Machine Learning, APIs |
+| SQL | Data querying, analytics, and database operations |
+
+---
+
+## 🗄️ Database & Data Warehouse
+
+| Technology | Purpose |
+|------------|---------|
+| PostgreSQL | Enterprise relational database |
+| SQLAlchemy | Object Relational Mapping (ORM) |
+| Views & Stored Procedures | Analytics optimization |
+
+---
+
+## 🚀 Backend Development
+
+| Technology | Purpose |
+|------------|---------|
+| FastAPI | REST API development |
+| Uvicorn | ASGI application server |
+| Pydantic | Data validation |
+| JWT | Secure authentication |
+| bcrypt | Password hashing |
+
+---
+
+## 📊 Data Analytics & Visualization
+
+| Technology | Purpose |
+|------------|---------|
+| Streamlit | Interactive analytics dashboards |
+| Plotly | Interactive visualizations |
+| Power BI | Business Intelligence dashboards |
+| Tableau | Data visualization & reporting |
+| Matplotlib | Statistical plotting |
+| Pandas | Data manipulation |
+| NumPy | Numerical computing |
+
+---
+
+## 🔄 Data Engineering
+
+| Technology | Purpose |
+|------------|---------|
+| Python ETL | Data extraction, transformation & loading |
+| Apache Airflow | Workflow orchestration |
+| Apache Kafka | Streaming architecture |
+| PostgreSQL Views | Analytics-ready datasets |
+
+---
+
+## 🤖 Artificial Intelligence
+
+| Technology | Purpose |
+|------------|---------|
+| Groq LLM | AI-powered football assistant |
+| Prompt Engineering | Natural language analytics |
+| AI Chat Interface | Intelligent query processing |
+
+---
+
+## 🧠 Machine Learning
+
+| Technology | Purpose |
+|------------|---------|
+| Scikit-learn | Machine learning models |
+| XGBoost | Advanced prediction models |
+| Random Forest | Regression & classification |
+| Gradient Boosting | Match outcome prediction |
+| Logistic Regression | Binary classification |
+
+---
+
+## ⚙️ Enterprise MLOps
+
+| Technology | Purpose |
+|------------|---------|
+| Model Registry | Model version management |
+| Feature Store | Centralized feature management |
+| Drift Detection | Model performance monitoring |
+| Experiment Tracking | ML lifecycle management |
+
+---
+
+## 📡 Monitoring & Observability
+
+| Technology | Purpose |
+|------------|---------|
+| Health Monitoring | Platform health checks |
+| Performance Monitoring | System performance metrics |
+| Audit Logging | User activity tracking |
+| Alert Management | Operational alerts |
+
+---
+
+## 🔐 Security & Authentication
+
+| Technology | Purpose |
+|------------|---------|
+| JWT Authentication | Secure user authentication |
+| Role-Based Access Control | User authorization |
+| Session Management | Secure user sessions |
+| Cookie Management | Persistent authentication |
+
+---
+
+## 🧪 Development & Testing
+
+| Technology | Purpose |
+|------------|---------|
+| Git | Version control |
+| GitHub | Source code management |
+| unittest | Automated testing |
+| Virtual Environment | Dependency isolation |
+
+---
+
+## 🏗️ Enterprise Architecture
+
+| Layer | Technology |
+|-------|------------|
+| Presentation Layer | Streamlit |
+| API Layer | FastAPI |
+| Service Layer | Python |
+| Data Layer | PostgreSQL |
+| Machine Learning Layer | Scikit-learn, XGBoost |
+| Streaming Layer | Apache Kafka |
+| Workflow Layer | Apache Airflow |
+| Monitoring Layer | Custom Monitoring Platform |
+
+---
+
+## 📈 Technology Highlights
+
+- ✅ Enterprise Modular Architecture
+- ✅ RESTful API Design
+- ✅ Interactive Business Intelligence
+- ✅ AI-Powered Analytics
+- ✅ Machine Learning Prediction Platform
+- ✅ Enterprise MLOps Workflow
+- ✅ Streaming Data Architecture
+- ✅ Role-Based Authentication
+- ✅ Monitoring & Observability
+- ✅ Scalable PostgreSQL Data Warehouse
+
+---
+
+# 🧩 Platform Modules
+
+SPORTA VISTA PRO is organized into independent, modular components following a layered enterprise architecture. Each module is responsible for a specific domain while integrating seamlessly with the rest of the platform.
+
+---
+
+# ⚽ Football Analytics Module
+
+Provides comprehensive match, player, and team analytics using historical football event data.
 
 ### Capabilities
 
-- Player Statistics
-- Performance Rankings
-- Position Analysis
-- SPORTA Score
-- Similar Player Search
-- AI Player Comparison
-- Performance KPIs
+- Match Intelligence
+- Team Performance Analysis
+- Player Performance Analytics
+- Expected Goals (xG) Analytics
+- Passing & Shooting Analysis
+- Tactical Performance Insights
+- Interactive Match Dashboards
 
 ---
 
-## Transfer Intelligence
+# 🔍 Scouting & Recruitment Module
 
-The Transfer Intelligence module assists scouts and recruitment teams.
+Supports player discovery, recruitment analysis, and transfer decision-making through AI-assisted analytics.
 
-### Features
+### Capabilities
 
-- AI Transfer Advisor
-- Similar Player Recommendation
-- Transfer Recommendation Dashboard
+- Scouting Reports
+- Player Comparison
 - Player Similarity Analysis
-- Recommendation Visualizations
+- Transfer Intelligence
+- Transfer Recommendation Engine
 - Recruitment Analytics
+- Squad Evaluation
 
 ---
 
-## Match Intelligence
+# 🏃 Athlete Performance Module
 
-Provides detailed analysis of football matches.
+Monitors player fitness, workload, and performance to assist coaching and sports science teams.
 
-### Includes
+### Capabilities
 
-- Match Dashboard
-- Team Statistics
-- Player Statistics
-- Timeline Analysis
-- Event Analysis
-- Possession
-- Passing Accuracy
-- Progressive Passing
-- PPDA
-- Pressure Analytics
-- xG Analytics
+- Athlete Monitoring Dashboard
+- Performance Tracking
+- Injury Risk Analysis
+- Player Availability
+- Workload Monitoring
+- Physical Performance Metrics
 
 ---
 
-## Football Pitch Analytics
+# 📊 Executive Business Intelligence Module
 
-Interactive event visualizations rendered directly on a football pitch.
+Provides executives and club management with strategic business insights.
 
-Includes
+### Capabilities
 
-- Player Heatmaps
-- Team Heatmaps
-- Shot Maps
-- Pass Maps
-- Carry Maps
-- Pressure Maps
-- Defensive Action Maps
-
----
-
-## Tactical Intelligence
-
-AI-generated tactical reports for coaches and analysts.
-
-### Outputs
-
-- Executive Summary
-- Team Strengths
-- Team Weaknesses
-- Coach Recommendations
-- Match Verdict
-- Tactical Observations
+- Executive KPI Dashboard
+- Revenue Analytics
+- Expense Analysis
+- Budget Planning
+- Contract Management
+- Wage Analysis
+- Player ROI Analysis
+- Squad Valuation
+- Sponsorship Analytics
+- Fan Engagement
+- Merchandise Analytics
+- Board Reports
 
 ---
 
-## AI Assistant
+# 🤖 Artificial Intelligence Module
 
-Natural language assistant capable of answering football analytics questions.
+Integrates AI-powered assistants to simplify football analytics and decision-making.
 
-Example questions:
+### Capabilities
+
+- AI Football Assistant
+- Natural Language Query Interface
+- AI-Powered Recommendations
+- Intelligent Analytics
+- Football Knowledge Assistant
+
+---
+
+# 🧠 Machine Learning Platform
+
+Implements predictive models for football analytics and performance forecasting.
+
+### Models
+
+- Match Outcome Prediction
+- Player Rating Prediction
+- Injury Risk Prediction
+- Transfer Success Prediction
+- Market Value Prediction
+- Team Strength Prediction
+
+---
+
+# ⚙️ Enterprise MLOps Platform
+
+Provides the complete lifecycle management for machine learning models.
+
+### Capabilities
+
+- Experiment Tracking
+- Model Registry
+- Feature Store
+- Feature Catalog
+- Drift Detection
+- Model Deployment
+- Retraining Pipeline
+- Prediction Monitoring
+- Model Health Dashboard
+
+---
+
+# 📈 Observability & Monitoring Platform
+
+Monitors the health and performance of every platform component.
+
+### Capabilities
+
+- System Health Monitoring
+- API Monitoring
+- Database Monitoring
+- Streaming Monitoring
+- ETL Monitoring
+- Authentication Monitoring
+- Audit Logs
+- Alert Center
+- Service Status
+- Resource Usage Dashboard
+- Performance Dashboard
+
+---
+
+# 🔄 Streaming & Data Engineering Platform
+
+Processes football data through scalable ETL and streaming pipelines.
+
+### Capabilities
+
+- ETL Pipelines
+- Incremental Data Loading
+- Data Validation
+- Event Processing
+- Apache Kafka Streaming
+- Apache Airflow Scheduling
+- Batch Processing
+- Pipeline Monitoring
+
+---
+
+# 🔐 Authentication & Security Module
+
+Secures platform access using enterprise authentication mechanisms.
+
+### Capabilities
+
+- JWT Authentication
+- Role-Based Access Control (RBAC)
+- Secure Password Hashing
+- Session Management
+- Cookie-Based Authentication
+- Authorization Middleware
+
+---
+
+# 🌐 REST API Platform
+
+Exposes analytics services through secure RESTful APIs.
+
+### Capabilities
+
+- FastAPI Endpoints
+- Authentication APIs
+- Prediction APIs
+- Analytics APIs
+- JSON Responses
+- Request Validation
+- API Documentation
+
+---
+
+# 🗄️ Data Warehouse Platform
+
+Stores structured football data for analytical workloads.
+
+### Components
+
+- PostgreSQL Database
+- Star Schema Design
+- Analytics Views
+- Optimized SQL Queries
+- Data Validation
+- Historical Match Storage
+
+---
+
+# 🏗️ Platform Characteristics
+
+- Modular Architecture
+- Enterprise Layered Design
+- Scalable Components
+- Service-Oriented Structure
+- AI-Integrated Analytics
+- Business Intelligence Ready
+- Machine Learning Ready
+- Streaming Ready
+- Monitoring Ready
+- Production-Oriented Development
+
+---
+
+# 📁 Project Structure
+
+SPORTA VISTA PRO follows a modular enterprise architecture with clear separation between data engineering, backend services, machine learning, dashboards, APIs, authentication, monitoring, and deployment components.
 
 ```text
-Compare Messi and Ronaldo
-
-Recommend a replacement for Rodri
-
-Why did Manchester City lose?
-
-Summarize the match
-
-Show best midfielders under 24
-
-Explain tactical weaknesses
-
-Generate scouting report
+SPORTA-VISTA-PRO/
+│
+├── api/                         # FastAPI REST API
+│
+├── auth/                        # Authentication & RBAC
+│
+├── dashboards/                  # Streamlit dashboards
+│   ├── components/              # Reusable dashboard components
+│   ├── pages/                   # Individual dashboard pages
+│   └── app.py                   # Main Streamlit application
+│
+├── database/                    # Database connection & utilities
+│
+├── repositories/                # Data access layer
+│
+├── services/                    # Business logic & analytics services
+│
+├── prediction/                  # Machine Learning prediction platform
+│   ├── training/
+│   ├── inference/
+│   ├── evaluation/
+│   ├── explainability/
+│   ├── registry/
+│   └── tests/
+│
+├── mlops/                       # Enterprise MLOps platform
+│   ├── experiments/
+│   ├── registry/
+│   ├── feature_store/
+│   ├── drift/
+│   ├── deployment/
+│   ├── monitoring/
+│   ├── retraining/
+│   └── tests/
+│
+├── monitoring/                  # Observability platform
+│   ├── system/
+│   ├── api/
+│   ├── database/
+│   ├── streaming/
+│   ├── ml/
+│   ├── etl/
+│   ├── authentication/
+│   ├── alerts/
+│   ├── audit/
+│   └── tests/
+│
+├── streaming/                   # Apache Kafka streaming
+│
+├── etl/                         # ETL pipelines
+│
+├── models/                      # Machine Learning models
+│
+├── sql/                         # SQL scripts & database views
+│
+├── data/                        # Datasets
+│
+├── config/                      # Application configuration
+│
+├── docs/                        # Project documentation
+│
+├── scripts/                     # Utility & automation scripts
+│
+├── tests/                       # Project-wide tests
+│
+├── requirements.txt             # Python dependencies
+├── README.md                    # Project documentation
+└── LICENSE                      # License
 ```
 
 ---
 
-# 🧠 Machine Learning
+# 📂 Directory Overview
 
-The platform incorporates machine learning models for football analytics.
-
-Current capabilities include
-
-- Player Similarity Engine
-- Recommendation Engine
-- Performance Analysis
-
-Future machine learning modules include
-
-- Injury Prediction
-- Match Outcome Prediction
-- Player Valuation
-- Transfer Success Prediction
-- Team Style Classification
-- Season Simulation
-
----
-
-# 📈 Business Intelligence
-
-SPORTA VISTA PRO supports executive decision-making through interactive analytics.
-
-KPIs include
-
-- Player Performance
-- Team Performance
-- Match KPIs
-- xG
-- Possession
-- Passing Accuracy
-- Progressive Actions
-- Defensive Metrics
-- Scouting Analytics
-
-Future BI modules include
-
-- Financial Analytics
-- Transfer ROI
-- Wage Efficiency
-- Commercial Analytics
-- Fan Engagement
-- Sponsorship Analytics
+| Directory | Description |
+|------------|-------------|
+| **api/** | FastAPI backend exposing analytics and prediction APIs |
+| **auth/** | Authentication, authorization, JWT, RBAC, and session management |
+| **dashboards/** | Interactive Streamlit dashboards and UI components |
+| **database/** | Database configuration, connection management, and utilities |
+| **repositories/** | Data access layer responsible for database queries |
+| **services/** | Business logic powering dashboards, APIs, AI, and analytics |
+| **prediction/** | Machine Learning training, inference, evaluation, explainability, and model registry |
+| **mlops/** | Enterprise MLOps including experiment tracking, deployment, drift detection, and feature store |
+| **monitoring/** | Platform observability, health monitoring, audit logs, and alert management |
+| **streaming/** | Apache Kafka streaming architecture and event processing |
+| **etl/** | Data extraction, transformation, validation, and loading pipelines |
+| **models/** | Trained machine learning model artifacts |
+| **sql/** | SQL queries, views, stored procedures, and analytical scripts |
+| **data/** | Raw and processed datasets |
+| **config/** | Environment-specific configuration and settings |
+| **docs/** | Technical documentation and architecture guides |
+| **scripts/** | Utility scripts for deployment, automation, and maintenance |
+| **tests/** | Unit and integration tests |
 
 ---
 
-# 🔒 Security
+# 🏗️ Architectural Principles
 
-Security is implemented throughout the platform.
+SPORTA VISTA PRO is designed around enterprise software engineering principles:
 
-Features include
-
-- JWT Authentication
-- Password Hashing
-- Role Based Access Control
-- Protected Dashboards
-- Session Management
-
-Supported Roles
-
-- Administrator
-- Coach
-- Scout
-- Analyst
+- Layered Architecture
+- Separation of Concerns
+- Modular Components
+- Service-Oriented Design
+- Repository Pattern
+- Scalable Machine Learning Pipeline
+- Reusable Dashboard Components
+- Enterprise Authentication
+- Independent Monitoring & MLOps Platforms
+- Production-Oriented Code Organization
 
 ---
 
-# 📦 Data Warehouse
+# 📸 Dashboard Gallery
 
-The analytics platform is built on PostgreSQL.
-
-Current warehouse includes
-
-### Fact Tables
-
-- Match Events
-- Matches
-
-### Dimension Tables
-
-- Players
-- Teams
-- Competitions
-- Seasons
-
-The warehouse is designed for future expansion to include
-
-- Injuries
-- Training Sessions
-- Financial Analytics
-- GPS Tracking
-- Medical Records
+SPORTA VISTA PRO provides a collection of interactive dashboards designed for analysts, coaches, scouts, executives, and administrators. Each dashboard focuses on a specific aspect of football intelligence, business analytics, or platform operations.
 
 ---
 
-# 🔄 ETL & Data Engineering
+## 🔐 Authentication
 
-The ETL pipeline transforms raw football event data into analytics-ready datasets.
+| Login Portal |
+|--------------|
+| ![](Screenshots/login.png) |
 
-Current capabilities include
-
-- JSON Data Loading
-- Data Cleaning
-- Schema Validation
-- Duplicate Detection
-- Coordinate Extraction
-- Data Transformation
-- Warehouse Loading
-
-Future enhancements include
-
-- Apache Kafka Streaming
-- Apache Airflow Scheduling
-- Incremental Loading
-- Data Freshness Monitoring
+Secure role-based authentication with JWT and Role-Based Access Control (RBAC).
 
 ---
 
-# 🚀 Development Roadmap
+## 🏠 Platform Overview
 
-SPORTA VISTA PRO is being developed as a long-term enterprise sports analytics platform.
+| Home Dashboard |
+|----------------|
+| ![](Screenshots/home.png) |
 
-The roadmap includes
-
-### Advanced Match Intelligence
-
-- Passing Networks
-- Formation Detection
-- Average Player Positions
-- Tactical Momentum
-- Team Shape Analysis
-- Defensive Blocks
-
-### Athlete Monitoring
-
-- GPS Analytics
-- Sprint Metrics
-- Distance Covered
-- Heart Rate
-- Recovery Score
-- Fatigue Analysis
-
-### Injury Prediction
-
-- Random Forest
-- XGBoost
-- SHAP Explainability
-
-### Team Style Analytics
-
-- Possession Style
-- Counter Attack
-- High Press
-- Low Block
-- Direct Play
-
-### Prediction Engine
-
-- Match Prediction
-- Transfer Success
-- Player Valuation
-- Season Simulation
-
-### REST APIs
-
-- FastAPI
-- Swagger Documentation
-- Secure JWT APIs
-
-### DevOps
-
-- Docker
-- GitHub Actions
-- CI/CD
-- Monitoring
-- Cloud Deployment
-
-### Big Data
-
-- Hadoop
-- Spark
-- Hive
-
-### Multi-Sport Support
-
-Architecture designed to support
-
-- Football
-- Cricket
-- Basketball
-- Hockey
+Central navigation hub providing quick access to all platform modules and analytics.
 
 ---
 
-# 📸 Platform Preview
+## ⚽ Football Analytics
 
-Screenshots of the platform will be added here.
+| Match Intelligence | xG Analytics |
+|-------------------|--------------|
+| ![](Screenshots/match_intelligence.png) | ![](Screenshots/xg_analytics.png) |
 
-Suggested sections
+Advanced football analytics including tactical insights, expected goals (xG), match events, and team performance.
 
-- Login
-- Dashboard
-- Player Intelligence
-- Transfer Recommendation
-- Match Intelligence
-- Pitch Analytics
-- Tactical Analysis
+---
+
+## 👤 Player Intelligence
+
+| Player Comparison | Scouting Reports |
+|-------------------|------------------|
+| ![](Screenshots/player_comparison.png) | ![](Screenshots/scouting_reports.png) |
+
+Compare player performance, evaluate strengths and weaknesses, and generate AI-assisted scouting reports.
+
+---
+
+## 💰 Recruitment & Transfers
+
+| Transfer Intelligence | AI Transfer Recommendations |
+|-----------------------|-----------------------------|
+| ![](Screenshots/transfer_intelligence.png) | ![](Screenshots/transfer_recommendations.png) |
+
+Analyze transfer targets, evaluate squad needs, and generate intelligent recruitment recommendations.
+
+---
+
+## 🏃 Athlete Monitoring
+
+| Athlete Monitoring | Injury Risk |
+|--------------------|-------------|
+| ![](Screenshots/athlete_monitoring.png) | ![](Screenshots/injury_risk.png) |
+
+Monitor player workload, fitness, availability, and injury risk to support performance staff.
+
+---
+
+## 🤖 Artificial Intelligence
+
+| AI Chat Assistant |
+|-------------------|
+| ![](Screenshots/ai_chat.png) |
+
+Natural language interface enabling users to query football data and receive AI-powered insights.
+
+---
+
+## 📊 Executive Business Intelligence
+
+| Executive Dashboard |
+|---------------------|
+| ![](Screenshots/executive_bi.png) |
+
+Executive analytics covering finance, contracts, revenue, player ROI, sponsorship, fan engagement, and strategic KPIs.
+
+---
+
+## 🧠 Enterprise MLOps
+
+| MLOps Platform |
+|----------------|
+| ![](Screenshots/mlops_platform.png) |
+
+Manage machine learning experiments, feature store, model registry, deployment, drift detection, and monitoring.
+
+---
+
+## 📈 Observability & Monitoring
+
+| Monitoring Dashboard |
+|----------------------|
+| ![](Screenshots/monitoring_platform.png) |
+
+Monitor platform health, APIs, databases, ETL pipelines, streaming services, alerts, and audit logs.
+
+---
+
+## 📱 Responsive Design
+
+The platform is designed with responsive layouts that adapt to different screen sizes while maintaining usability and consistent navigation across all dashboards.
 
 ---
 
 # 🚀 Getting Started
 
-Clone the repository
+## Prerequisites
+
+Before running the project, ensure the following software is installed:
+
+| Software | Version |
+|-----------|----------|
+| Python | 3.11+ |
+| PostgreSQL | 15+ |
+| Git | Latest |
+| pip | Latest |
+
+> **Optional (for future platform expansion):**
+>
+> - Docker
+> - Apache Kafka
+> - Apache Airflow
+> - Redis
+
+---
+
+# 📥 Installation
+
+### Clone the Repository
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/Sports-Intelligence-Analytics-Platform.git
+git clone https://github.com/Dinil007/Sports-Intelligence-Analytics-Platform.git
+
+cd Sports-Intelligence-Analytics-Platform
 ```
 
-Enter the project
+---
+
+### Create Virtual Environment
 
 ```bash
-cd "Sports Intelligence & Analytics Platform"
+python -m venv venv
 ```
-
-Create a virtual environment
-
-```bash
-python -m venv .venv
-```
-
-Activate
 
 Windows
 
-```powershell
-.venv\Scripts\activate
+```bash
+venv\Scripts\activate
 ```
 
 Linux / macOS
 
 ```bash
-source .venv/bin/activate
+source venv/bin/activate
 ```
 
-Install dependencies
+---
+
+### Install Dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-Run Streamlit
+---
+
+### Configure Environment
+
+Create a `.env` file in the project root and configure your environment variables.
+
+Example:
+
+```env
+DATABASE_URL=postgresql://username:password@localhost:5432/sporta_vista
+JWT_SECRET=your_secret_key
+GROQ_API_KEY=your_api_key
+```
+
+---
+
+### Start the FastAPI Backend
+
+```bash
+uvicorn api.main:app --reload
+```
+
+API Documentation
+
+```
+http://127.0.0.1:8000/docs
+```
+
+---
+
+### Launch the Streamlit Dashboard
 
 ```bash
 streamlit run dashboards/app.py
 ```
 
----
+Dashboard
 
-# 🎯 Project Goal
-
-SPORTA VISTA PRO aims to bridge the gap between traditional sports statistics and modern AI-driven decision support.
-
-The platform combines Data Engineering, Business Intelligence, Machine Learning, and Artificial Intelligence into a single analytics ecosystem capable of supporting football clubs, analysts, scouts, executives, and researchers.
-
-The architecture is designed for scalability, allowing future integration of live data pipelines, advanced machine learning models, cloud deployment, and multi-sport analytics.
+```
+http://localhost:8501
+```
 
 ---
 
-# 👨‍💻 Author
+# 🔌 REST API
 
-**Dinil Raj**
+The platform exposes REST APIs using **FastAPI**.
 
-MCA Graduate | Data Analytics | Sports Analytics | Business Intelligence | Machine Learning | AI Engineering
+### Available API Categories
 
-GitHub
+- Authentication APIs
+- Player Analytics APIs
+- Match Analytics APIs
+- Team Analytics APIs
+- Prediction APIs
+- AI Assistant APIs
+- Executive BI APIs
+- Monitoring APIs
 
-https://github.com/Dinil007
-
-LinkedIn
-
-(Add your LinkedIn profile)
-
----
-
-# 📄 License
-
-This project is licensed under the MIT License.
+Interactive documentation is automatically generated using FastAPI Swagger UI.
 
 ---
 
-⭐ If you found this project interesting, consider giving it a star!
+# 🗄️ Data Warehouse
 
+SPORTA VISTA PRO stores structured football data inside PostgreSQL.
 
-# 📊 Current Platform Capabilities
+The warehouse includes:
 
-SPORTA VISTA PRO currently provides a complete analytics workflow from raw football event data to AI-powered decision support.
+- Competitions
+- Matches
+- Teams
+- Players
+- Events
+- Shots
+- Analytics Views
+- Materialized Views
 
-### Data Engineering
+The warehouse supports analytical queries optimized for dashboard performance.
 
-- ETL pipelines for football event data
-- PostgreSQL Data Warehouse
-- Repository Pattern Architecture
-- SQL Views
+---
+
+# 🔄 Data Engineering
+
+The ETL layer transforms raw football datasets into analytics-ready tables.
+
+Pipeline stages include:
+
+- Data Extraction
 - Data Validation
-- Coordinate Extraction
-- Schema Management
+- Data Cleaning
+- Data Transformation
+- Feature Engineering
+- Database Loading
+- Analytics View Generation
 
 ---
 
-### Analytics
+# 🧠 Machine Learning
 
-- Player Intelligence
-- Team Intelligence
-- Match Intelligence
-- Tactical Intelligence
-- Transfer Intelligence
-- Scouting Analytics
-- Executive KPIs
+The platform includes multiple prediction models.
 
----
+Implemented models:
 
-### Artificial Intelligence
+- Match Outcome Prediction
+- Player Rating Prediction
+- Injury Risk Prediction
+- Transfer Success Prediction
+- Market Value Prediction
+- Team Strength Prediction
 
-- AI Tactical Analysis
-- AI Transfer Advisor
-- AI Player Recommendations
-- Natural Language Analytics
-- Football Insight Generation
+Each model follows a standardized workflow including preprocessing, training, evaluation, and inference.
 
 ---
 
-### Visualization
+# ⚙️ MLOps Platform
 
+The Enterprise MLOps Platform provides:
+
+- Experiment Tracking
+- Model Registry
+- Feature Store
+- Drift Detection
+- Model Deployment
+- Retraining Pipelines
+- Prediction Monitoring
+
+This enables complete lifecycle management of machine learning models.
+
+---
+
+# 📈 Observability & Monitoring
+
+The monitoring platform provides visibility into system health.
+
+Supported monitoring includes:
+
+- System Health
+- API Monitoring
+- Database Monitoring
+- Streaming Monitoring
+- ETL Monitoring
+- Authentication Monitoring
+- Resource Usage
+- Alert Center
+- Audit Logs
+
+---
+
+# 🗺️ Project Roadmap
+
+## ✅ Completed
+
+- Enterprise PostgreSQL Data Warehouse
 - Interactive Streamlit Dashboards
-- Plotly Charts
-- Football Pitch Visualizations
-- Match Dashboards
-- Tactical Reports
-
----
-
-# 📈 Example Use Cases
-
-SPORTA VISTA PRO can support multiple stakeholders inside a football club.
-
-## Coaches
-
-- Analyze match performance
-- Review tactical weaknesses
-- Receive AI coaching recommendations
-- Study possession and pressure patterns
-
----
-
-## Scouts
-
-- Discover similar players
-- Evaluate transfer targets
-- Compare player profiles
-- Analyze recruitment metrics
-
----
-
-## Analysts
-
-- Explore match event data
-- Generate advanced KPIs
-- Build tactical reports
-- Compare team performances
-
----
-
-## Sporting Directors
-
-- Evaluate transfer recommendations
-- Review squad performance
-- Identify replacement players
-- Monitor long-term recruitment strategy
-
----
-
-## Executives
-
-- Executive dashboards
-- Business Intelligence reports
-- Squad performance overview
-- Decision support analytics
-
----
-
-# 🏆 Key Highlights
-
-✔ Enterprise-inspired architecture
-
-✔ Modular service-oriented design
-
-✔ AI-powered football analytics
-
-✔ Interactive dashboards
-
-✔ Advanced PostgreSQL data warehouse
-
-✔ Event-level football analytics
-
-✔ Transfer recommendation engine
-
-✔ Tactical intelligence engine
-
-✔ Football pitch visualizations
-
-✔ Role-based authentication
-
-✔ Production-ready architecture
-
-✔ Scalable for future multi-sport support
-
----
-
-# 📚 Skills Demonstrated
-
-This project demonstrates practical experience in:
-
-### Programming
-
-- Python
-
-### Databases
-
-- PostgreSQL
-- SQL
-- SQLAlchemy
-
-### Data Engineering
-
-- ETL Development
-- Data Validation
-- Data Modeling
-- Repository Pattern
-
-### Analytics
-
-- Sports Analytics
-- Statistical Analysis
-- KPI Development
-- Match Analysis
-
-### Machine Learning
-
-- Player Similarity
-- Recommendation Systems
-- Predictive Analytics Architecture
-
-### Artificial Intelligence
-
-- LLM Integration
-- AI Tactical Analysis
-- Natural Language Processing
-
-### Dashboard Development
-
-- Streamlit
-- Plotly
-- Interactive Analytics
-
-### Software Engineering
-
-- Clean Architecture
-- Modular Design
-- Authentication
-- RBAC
-- Version Control
-
----
-
-# 🌍 Future Vision
-
-SPORTA VISTA PRO is designed as a long-term sports analytics ecosystem.
-
-Future expansions include:
-
-- Live Match Streaming
-- Apache Kafka Pipelines
-- Apache Airflow Scheduling
-- Injury Prediction Models
+- FastAPI REST API
+- JWT Authentication
+- AI Football Assistant
+- Player Analytics
+- Match Intelligence
+- Transfer Intelligence
 - Athlete Monitoring
-- GPS Analytics
-- Video Event Synchronization
-- Passing Network Analysis
-- Team Style Classification
-- REST APIs
-- Docker Deployment
-- GitHub Actions
-- Cloud Deployment (Azure / AWS)
-- MLOps
-- Multi-Sport Intelligence Platform
+- Executive Business Intelligence
+- Machine Learning Platform
+- Enterprise MLOps Platform
+- Observability & Monitoring Platform
+
+---
+
+## 🔜 Planned Enhancements
+
+- Live Match Data Integration
+- Cloud Deployment
+- Mobile Companion Application
+- Advanced Computer Vision
+- Video Analytics
+- Multi-Sport Support
+- Automated Report Generation
+- Advanced Tactical Analysis
+
+---
+
+# 📚 Documentation
+
+Additional project documentation is available inside the `docs/` directory.
+
+Topics include:
+
+- Project Architecture
+- Deployment Guides
+- Database Design
+- API Documentation
+- Data Engineering Workflows
 
 ---
 
 # 🤝 Contributing
 
-Contributions, ideas, feature requests, and feedback are always welcome.
+Contributions are welcome.
 
-If you would like to contribute:
+If you would like to improve SPORTA VISTA PRO:
 
 1. Fork the repository
 2. Create a feature branch
@@ -1034,13 +1325,45 @@ If you would like to contribute:
 
 ---
 
+# 📄 License
+
+This project is licensed under the MIT License.
+
+---
+
+# 👨‍💻 Author
+
+**Dinil Raj**
+
+MCA Graduate | Data Analyst | Sports Analytics Enthusiast
+
+### Connect with me
+
+- GitHub: https://github.com/Dinil007
+- LinkedIn: *(Add your LinkedIn profile here)*
+
+---
+
 # ⭐ Support
 
-If you found this project useful or interesting:
+If you found this project useful:
 
-- ⭐ Star the repository
-- 🍴 Fork the repository
-- 🛠 Suggest improvements
-- 📢 Share feedback
+⭐ Star the repository
 
-Your support helps improve SPORTA VISTA PRO.
+🍴 Fork the project
+
+📢 Share it with others
+
+Your support helps improve the project and motivates future development.
+
+---
+
+<p align="center">
+
+### ⚽ Built with passion for Data, AI, Analytics, and Football ⚽
+
+**SPORTA VISTA PRO**
+
+*Transforming Football Data into Intelligent Decisions.*
+
+</p>
