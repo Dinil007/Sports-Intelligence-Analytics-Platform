@@ -11,7 +11,7 @@ import streamlit as st
 from streamlit_cookies_manager import EncryptedCookieManager
 
 from auth.auth_guard import is_valid_role
-from auth.navigation import PAGE_DEFINITIONS, ROLE_PAGE_KEYS
+from auth.navigation import PAGE_DEFINITIONS, ROLE_PAGE_KEYS, ROLE_PAGE_GROUPS
 from auth.session_manager import clear_auth_session, init_anonymous_session
 from auth.streamlit_auth import (
     ensure_authenticated,
@@ -100,9 +100,28 @@ def _get_page_registry():
     return _build_page_registry()
 
 
-def _pages_for_role(role: str):
+def _pages_for_role(role: str) -> list:
+    """Return flat page list for a role (kept for diagnostics/tests)."""
     registry = _get_page_registry()
-    return [registry[key] for key in ROLE_PAGE_KEYS.get(role, [])]
+    return [registry[key] for key in ROLE_PAGE_KEYS.get(role, []) if key in registry]
+
+
+def _groups_for_role(role: str) -> dict[str, list]:
+    """Return grouped navigation dict for st.navigation().
+
+    Each key is a sidebar section header; each value is a list of st.Page
+    objects.  st.navigation() accepts this Mapping natively and renders
+    every section independently — no overflow, no hidden pages, scales
+    indefinitely as new phases are added.
+    """
+    registry = _get_page_registry()
+    sections = ROLE_PAGE_GROUPS.get(role, {})
+    groups: dict[str, list] = {}
+    for section_label, keys in sections.items():
+        pages = [registry[k] for k in keys if k in registry]
+        if pages:
+            groups[section_label] = pages
+    return groups
 
 
 def _login_styles() -> None:
@@ -236,29 +255,12 @@ if is_authenticated():
     if not is_valid_role(role):
         logout_user(cookies)
 
-    pages = _pages_for_role(role)
+    groups = _groups_for_role(role)
 
-    # --- TEMPORARY RUNTIME DEBUG ---
-    st.sidebar.markdown("## DEBUG")
-    st.sidebar.write("Current Role:", role)
-    st.sidebar.write("Total Pages:", len(pages))
-    st.sidebar.write("Page Titles:")
-    for page in pages:
-        st.sidebar.write("-", page.title)
-
-    print("=" * 60)
-    print("ROLE:", role)
-    print("TOTAL PAGES:", len(pages))
-    print("PAGE TITLES:")
-    for page in pages:
-        print("-", page.title)
-    print("=" * 60)
-    # --- END TEMPORARY RUNTIME DEBUG ---
-
-    if not pages:
+    if not groups:
         logout_user(cookies)
 
-    pg = st.navigation(pages)
+    pg = st.navigation(groups)
     show_sidebar_user_profile(cookies)
 else:
     pg = st.navigation([login_page], position="hidden")

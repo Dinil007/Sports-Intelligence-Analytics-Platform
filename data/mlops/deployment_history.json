@@ -1,0 +1,9 @@
+[
+    {
+        "model_id": "goals_predictor",
+        "version": "0.9.0",
+        "stage": "Rollback",
+        "status": "Success",
+        "timestamp": "2026-07-04T09:37:19.902819+00:00"
+    }
+]

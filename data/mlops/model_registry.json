@@ -1,0 +1,20 @@
+{
+    "goals_predictor": {
+        "model_id": "goals_predictor",
+        "name": "Goals Predictor Model",
+        "version": "1.1.0",
+        "stage": "Rollback",
+        "description": "Predicts player goal probability.",
+        "registered_at": "2026-07-03T21:43:33.239369+00:00",
+        "updated_at": "2026-07-04T09:37:19.888491+00:00"
+    },
+    "injury_classifier": {
+        "model_id": "injury_classifier",
+        "name": "Injury Classifier Model",
+        "version": "2.0.0",
+        "stage": "Staging",
+        "description": "Predicts athlete soft tissue injury risks.",
+        "registered_at": "2026-07-03T21:43:33.268130+00:00",
+        "updated_at": "2026-07-03T21:43:33.281143+00:00"
+    }
+}

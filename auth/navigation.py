@@ -1,4 +1,13 @@
-"""Role-based page registry for SPORTA VISTA PRO navigation."""
+"""Role-based page registry for SPORTA VISTA PRO navigation.
+
+Architecture:
+  PAGE_DEFINITIONS  — single source of truth: key → (path, title, icon)
+  ROLE_PAGE_KEYS    — flat ordered key list per role (backward compat / tests)
+  ROLE_PAGE_GROUPS  — ordered section dict per role used by st.navigation()
+                      Maps  SectionHeader → [page keys]
+                      This is the permanent fix for sidebar overflow: grouped
+                      navigation scales to any number of future phases.
+"""
 
 from pathlib import Path
 
@@ -26,6 +35,7 @@ PAGE_DEFINITIONS = {
     "transfer_intelligence": (PROJECT_ROOT / "dashboards" / "pages" / "13_💰_Transfer_Intelligence.py", "Transfer Intelligence", "💰"),
     "athlete_monitoring": (PROJECT_ROOT / "dashboards" / "pages" / "14_🏃_Athlete_Monitoring.py", "Athlete Monitoring", "🏃"),
     "executive_bi": (PROJECT_ROOT / "dashboards" / "pages" / "16_📊_Executive_Business_Intelligence.py", "Executive Business Intelligence", "📊"),
+    "mlops_platform": (PROJECT_ROOT / "dashboards" / "pages" / "17_🤖_MLOps_Platform.py", "MLOps Platform", "🤖"),
 }
 
 ROLE_PAGE_KEYS = {
@@ -46,6 +56,7 @@ ROLE_PAGE_KEYS = {
         "transfer_intelligence",
         "athlete_monitoring",
         "executive_bi",
+        "mlops_platform",
     ],
     "scout": [
         "home",
@@ -75,12 +86,54 @@ ROLE_PAGE_KEYS = {
         "transfer_intelligence",
         "athlete_monitoring",
         "executive_bi",
+        "mlops_platform",
     ],
 }
 
 
+# ── Grouped navigation ────────────────────────────────────────────────────────
+# Each role maps to an ordered dict of  { "Section Label": [page_key, ...] }
+# st.navigation() accepts this Mapping directly (Streamlit 1.42+).
+# Adding a new phase = add one new entry here; the sidebar never overflows.
+
+ROLE_PAGE_GROUPS: dict[str, dict[str, list[str]]] = {
+    "admin": {
+        "Home": ["home"],
+        "AI Assistants": ["ai_chat", "ai_coach"],
+        "Analytics": ["xg_analytics", "team_analytics", "match_intelligence"],
+        "Players": ["player_comparison", "injury_risk"],
+        "Scouting": ["scouting_reports", "scouting_recruitment"],
+        "Transfers": ["transfer_recs", "transfer_advisor", "transfer_intelligence"],
+        "Monitoring": ["athlete_monitoring"],
+        "Management": ["executive_bi", "admin_panel"],
+        "Platform": ["mlops_platform"],
+    },
+    "scout": {
+        "Home": ["home"],
+        "Scouting": ["scouting", "scouting_recruitment", "scouting_reports"],
+        "Players": ["player_comparison", "athlete_monitoring"],
+        "Transfers": ["transfer_recs", "transfer_advisor", "transfer_intelligence"],
+    },
+    "coach": {
+        "Home": ["home"],
+        "AI Assistants": ["ai_coach", "ai_chat"],
+        "Team": ["team_analytics"],
+        "Monitoring": ["athlete_monitoring", "injury_risk"],
+    },
+    "analyst": {
+        "Home": ["home"],
+        "Analytics": ["xg_analytics", "team_analytics"],
+        "Scouting": ["scouting_reports", "scouting_recruitment"],
+        "Transfers": ["transfer_intelligence"],
+        "Monitoring": ["athlete_monitoring"],
+        "Management": ["executive_bi"],
+        "Platform": ["mlops_platform"],
+    },
+}
+
+
 def get_page_paths_for_role(role: str) -> list[str]:
-    """Return ordered page file paths allowed for a role."""
+    """Return ordered page file paths allowed for a role (flat, for tests)."""
     normalized = normalize_role(role)
     keys = ROLE_PAGE_KEYS.get(normalized, [])
     return [str(PAGE_DEFINITIONS[key][0]) for key in keys]

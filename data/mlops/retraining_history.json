@@ -1,0 +1,20 @@
+[
+    {
+        "run_id": "run_5645",
+        "model_name": "goals_predictor",
+        "dataset": "matches_2025_v1",
+        "previous_accuracy": 0.81,
+        "new_accuracy": 0.8475349734176599,
+        "status": "Success",
+        "timestamp": "2026-07-03T21:43:33.348083+00:00"
+    },
+    {
+        "run_id": "run_6664",
+        "model_name": "injury_classifier",
+        "dataset": "athlete_biometrics_v3",
+        "previous_accuracy": 0.81,
+        "new_accuracy": 0.8377370347196875,
+        "status": "Success",
+        "timestamp": "2026-07-03T21:43:33.358976+00:00"
+    }
+]

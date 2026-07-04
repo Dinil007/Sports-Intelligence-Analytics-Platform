@@ -1,0 +1,20 @@
+[
+    {
+        "model_id": "goals_predictor",
+        "prediction_count": 5200,
+        "latency_ms": 32.5,
+        "success_rate": 0.998,
+        "failures": 10,
+        "avg_confidence": 0.92,
+        "timestamp": "2026-07-03T21:43:33.360820+00:00"
+    },
+    {
+        "model_id": "injury_classifier",
+        "prediction_count": 1200,
+        "latency_ms": 48.1,
+        "success_rate": 0.995,
+        "failures": 6,
+        "avg_confidence": 0.88,
+        "timestamp": "2026-07-03T21:43:33.370905+00:00"
+    }
+]

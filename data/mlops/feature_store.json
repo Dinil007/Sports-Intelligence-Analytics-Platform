@@ -1,0 +1,51 @@
+{
+    "goals": {
+        "name": "goals",
+        "entity": "player",
+        "value_type": "int",
+        "description": "Total goals scored by player.",
+        "created_at": "2026-07-03T21:43:33.281882+00:00"
+    },
+    "assists": {
+        "name": "assists",
+        "entity": "player",
+        "value_type": "int",
+        "description": "Total assists by player.",
+        "created_at": "2026-07-03T21:43:33.293776+00:00"
+    },
+    "xg": {
+        "name": "xg",
+        "entity": "player",
+        "value_type": "float",
+        "description": "Expected Goals (xG) index.",
+        "created_at": "2026-07-03T21:43:33.302567+00:00"
+    },
+    "xa": {
+        "name": "xa",
+        "entity": "player",
+        "value_type": "float",
+        "description": "Expected Assists (xA) index.",
+        "created_at": "2026-07-03T21:43:33.312970+00:00"
+    },
+    "minutes_played": {
+        "name": "minutes_played",
+        "entity": "player",
+        "value_type": "int",
+        "description": "Total minutes played.",
+        "created_at": "2026-07-03T21:43:33.326780+00:00"
+    },
+    "distance_covered": {
+        "name": "distance_covered",
+        "entity": "player",
+        "value_type": "float",
+        "description": "Total distance covered (km).",
+        "created_at": "2026-07-03T21:43:33.334678+00:00"
+    },
+    "sprint_count": {
+        "name": "sprint_count",
+        "entity": "player",
+        "value_type": "int",
+        "description": "Total high-speed sprints.",
+        "created_at": "2026-07-03T21:43:33.347568+00:00"
+    }
+}
