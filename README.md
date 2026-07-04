@@ -951,101 +951,128 @@ SPORTA VISTA PRO provides a collection of interactive dashboards designed for an
 
 ## 🔐 Authentication
 
-| Login Portal |
-|--------------|
-| ![](Screenshots/login.png) |
+| | | |
+|---|---|---|
+| | | |
 
-Secure role-based authentication with JWT and Role-Based Access Control (RBAC).
+&nbsp;
+
+|![](Screenshots/login.png)|
+|---|
+|*Secure role-based authentication with JWT and Role-Based Access Control (RBAC).*|
+
+&nbsp;
 
 ---
 
 ## 🏠 Platform Overview
 
-| Home Dashboard |
-|----------------|
-| ![](Screenshots/home.png) |
+| Home Dashboard | Admin Dashboard |
+|---------------|----------------|
+|![](Screenshots/home.png)|![](Screenshots/Admin1.png)|
 
-Central navigation hub providing quick access to all platform modules and analytics.
+&nbsp;
+
+&nbsp;
 
 ---
 
 ## ⚽ Football Analytics
 
-| Match Intelligence | xG Analytics |
-|-------------------|--------------|
-| ![](Screenshots/match_intelligence.png) | ![](Screenshots/xg_analytics.png) |
+### Match Intelligence
 
-Advanced football analytics including tactical insights, expected goals (xG), match events, and team performance.
+|![](Screenshots/match_intelligence1.png)|![](Screenshots/match_intelligence12.png)|![](Screenshots/match_intelligence13.png)|
+|---|---|---|
+|![](Screenshots/match_intelligence14.png)|![](Screenshots/match_intelligence15.png)|![](Screenshots/match_intelligence16.png)|
+|![](Screenshots/match_intelligence17.png)||
+
+*Tactical analysis, match insights, and performance metrics.*
+
+&nbsp;
+
+### Team & xG Analytics
+
+| Team Analytics | xG Analytics | Team Analytics | xG Analytics |
+|----------------|--------------|----------------|--------------|
+|![](Screenshots/Team_Analytics1.png)|![](Screenshots/xG_Analytics1.png)|![](Screenshots/Team_Analytics2.png)|![](Screenshots/xG_Analytics2.png)|
+
+*Team performance analysis and Expected Goals (xG) visualization.*
+
+&nbsp;
 
 ---
 
 ## 👤 Player Intelligence
 
-| Player Comparison | Scouting Reports |
-|-------------------|------------------|
-| ![](Screenshots/player_comparison.png) | ![](Screenshots/scouting_reports.png) |
+|![](Screenshots/Player_Comparison1.png)|![](Screenshots/Player_Comparison2.png)|![](Screenshots/Scouting_Report1.png)|
+|---|---|---|
+|![](Screenshots/Scouting_Recruitment1.png)|![](Screenshots/Scouting_Recruitment2.png)| |
 
-Compare player performance, evaluate strengths and weaknesses, and generate AI-assisted scouting reports.
+*Player comparison, AI scouting reports, recruitment analytics, and talent evaluation.*
+
+&nbsp;
 
 ---
 
 ## 💰 Recruitment & Transfers
 
-| Transfer Intelligence | AI Transfer Recommendations |
-|-----------------------|-----------------------------|
-| ![](Screenshots/transfer_intelligence.png) | ![](Screenshots/transfer_recommendations.png) |
+|![](Screenshots/Transfer_Advisor.png)|![](Screenshots/Transfer_Intelligence1.png)|![](Screenshots/Transfer_Intelligence2.png)|
+|---|---|---|
+|![](Screenshots/Transfer_Intelligence3.png)|![](Screenshots/Transfer_Intelligence4.png)|![](Screenshots/Transfer_Intelligence5.png)|
+|![](Screenshots/Transfer_Recommendations1.png)|![](Screenshots/Transfer_Recommendations2.png)|![](Screenshots/Transfer_Recommendations3.png)|
 
-Analyze transfer targets, evaluate squad needs, and generate intelligent recruitment recommendations.
+*Transfer intelligence, squad planning, recruitment recommendations, and player valuation.*
+
+&nbsp;
 
 ---
 
 ## 🏃 Athlete Monitoring
 
-| Athlete Monitoring | Injury Risk |
-|--------------------|-------------|
-| ![](Screenshots/athlete_monitoring.png) | ![](Screenshots/injury_risk.png) |
+|![](Screenshots/Athlete_Monitoring1.png)|![](Screenshots/Athlete_Monitoring2.png)|![](Screenshots/Athlete_Monitoring3.png)|
+|---|---|---|
+|![](Screenshots/Athlete_Monitoring4.png)|![](Screenshots/Athlete_Monitoring5.png)|![](Screenshots/Athlete_Monitoring6.png)|
+|![](Screenshots/Injury_Risk1.png)| | |
 
-Monitor player workload, fitness, availability, and injury risk to support performance staff.
+*Fitness tracking, workload monitoring, performance metrics, and injury prediction.*
 
----
-
-## 🤖 Artificial Intelligence
-
-| AI Chat Assistant |
-|-------------------|
-| ![](Screenshots/ai_chat.png) |
-
-Natural language interface enabling users to query football data and receive AI-powered insights.
+&nbsp;
 
 ---
 
 ## 📊 Executive Business Intelligence
 
-| Executive Dashboard |
-|---------------------|
-| ![](Screenshots/executive_bi.png) |
+|![](Screenshots/Executive_Business_Intelligence1.png)|![](Screenshots/Executive_Business_Intelligence2.png)|![](Screenshots/Executive_Business_Intelligence3.png)|
+|---|---|---|
+|![](Screenshots/Executive_Business_Intelligence4.png)|![](Screenshots/Executive_Business_Intelligence5.png)|![](Screenshots/Executive_Business_Intelligence6.png)|
+|![](Screenshots/Executive_Business_Intelligence7.png)|![](Screenshots/Executive_Business_Intelligence8.png)|![](Screenshots/Executive_Business_Intelligence9.png)|
 
-Executive analytics covering finance, contracts, revenue, player ROI, sponsorship, fan engagement, and strategic KPIs.
+*Executive KPIs, finance, contracts, sponsorship, revenue, fan engagement, and strategic insights.*
+
+&nbsp;
 
 ---
 
 ## 🧠 Enterprise MLOps
 
-| MLOps Platform |
-|----------------|
-| ![](Screenshots/mlops_platform.png) |
+|![](Screenshots/MLOps_Platform1.png)|![](Screenshots/MLOps_Platform2.png)|![](Screenshots/MLOps_Platform3.png)|
+|---|---|---|
+|*Model lifecycle management, experiment tracking, deployment, monitoring, and AI operations.*| | |
 
-Manage machine learning experiments, feature store, model registry, deployment, drift detection, and monitoring.
+&nbsp;
 
 ---
 
-## 📈 Observability & Monitoring
+## 📈 Platform Observability
 
-| Monitoring Dashboard |
-|----------------------|
-| ![](Screenshots/monitoring_platform.png) |
+|![](Screenshots/Observability_Monitoring1.png)|![](Screenshots/Observability_Monitoring2.png)|![](Screenshots/Observability_Monitoring3.png)|
+|---|---|---|
+|![](Screenshots/Observability_Monitoring4.png)|![](Screenshots/Observability_Monitoring5.png)|![](Screenshots/Observability_Monitoring6.png)|
+|![](Screenshots/Observability_Monitoring7.png)| | |
 
-Monitor platform health, APIs, databases, ETL pipelines, streaming services, alerts, and audit logs.
+*Infrastructure health, ETL monitoring, API performance, streaming pipelines, database monitoring, and alerts.*
+
+&nbsp;
 
 ---
 
