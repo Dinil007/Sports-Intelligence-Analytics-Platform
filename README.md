@@ -1367,7 +1367,7 @@ MCA Graduate | Data Analyst | Sports Analytics Enthusiast
 ### Connect with me
 
 - GitHub: https://github.com/Dinil007
-- LinkedIn: *(Add your LinkedIn profile here)*
+- LinkedIn: *(https://www.linkedin.com/in/dinil-raj-025891258)*
 
 ---
 
